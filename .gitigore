@@ -1,0 +1,4 @@
+doc/*
+gen/*
+
+go.work
