@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/MuchUp-monorepo/gen/go/chat/v1";
+
+service ChatService {
+  rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/chat/rooms/{room_id}/messages"
+    };
+  }
+
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}/messages"
+      body: "*"
+    };
+  }
+
+  rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}/join"
+      body: "*"
+    };
+  }
+
+  rpc LeaveRoom (LeaveRoomRequest) returns (LeaveRoomResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}/leave"
+      body: "*"
+    };
+  }
+}
+
+
+message Message {
+          string message_id = 1;
+          string sender_id = 2;
+          string text = 3;
+          int64 created_at = 4;
+}
+
+message GetMessagesRequest {
+          string room_id = 2;
+}
+
+message GetMessagesResponse {
+          repeated Message message = 1;
+}
+
+message SendMessageRequest {
+          string user_id = 1;
+          string room_id = 2;
+          string text = 3;
+
+}
+
+message SendMessageResponse {
+  string room_id = 1;
+  string message_id = 2;
+  int64 created_at = 3;
+}
+
+
+message JoinRoomRequest {
+          string user_id = 1;
+          string room_id = 2;
+}
+
+
+message JoinRoomResponse {
+          string room_id = 1;
+}
+
+message LeaveRoomRequest {
+          string user_id = 1;
+          string room_id = 2;
+}
+
+
+message LeaveRoomResponse{
+          string room_id = 1;
+}

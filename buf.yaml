@@ -1,1 +1,9 @@
 version: v1
+
+lint:
+  use:
+    - DEFAULT
+
+beaking:
+  use:
+    - FILE
