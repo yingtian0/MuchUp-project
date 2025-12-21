@@ -22,23 +22,51 @@ Envoy を API Gateway としたマイクロサービス構成により、
 ## 🏗️ 全体アーキテクチャ
 
 ```text
-[ Browser (SPA) ]
-        |
-        | HTTPS / WebSocket
-        v
-[ Envoy API Gateway ]
-  - 認可 (ext_authz)
-  - レート制限
-  - WebSocket Upgrade
-        |
-        +-------------------+
-        |                   |
-        v                   v
-[ Backend API ]        [ AI Service ]
-   (Go)                   (Python)
-        |                   |
-        +---------+---------+
-                  |
-               [ Redis ]
-         (Streams / PubSub / State)
-```
+┌────────────────────────────┐
+│        Browser (SPA)        │
+│  - HTTPS (REST)             │
+│  - WebSocket                │
+└─────────────┬──────────────┘
+              │
+              │ HTTPS / WebSocket
+              v
+┌──────────────────────────────────────────┐
+│           Envoy API Gateway               │
+│                                          │
+│  :9000  AuthZ Port                        │
+│    - ext_authz (gRPC) ───────────────┐   │
+│                                      │   │
+│  :9001  REST API Port                 │   │
+│    - Routing / Rate Limit             │   │
+│                                      │   │
+│  :9002  WebSocket Port                │   │
+│    - WebSocket Upgrade                │   │
+└─────────────┬────────────────────────┬──┘
+              │                        │
+              │ gRPC                   │ gRPC
+              v                        v
+┌───────────────────────┐      ┌───────────────────────┐
+│     Backend API       │      │      AI Service        │
+│        (Go)           │      │       (Python)         │
+│  - Business Logic     │      │  - Prompt / Tooling   │
+│  - REST → gRPC        │      │                       │
+└───────────┬───────────┘      └───────────┬───────────┘
+            │                              │
+            │ gRPC                         │ gRPC
+            └──────────────┬───────────────┘
+                           v
+                  ┌───────────────────────┐
+                  │      LLM Service       │
+                  │  (Internal / External) │
+                  │  - gRPC API            │
+                  └───────────┬───────────┘
+                              │
+                              │
+                              v
+                    ┌────────────────────┐
+                    │        Redis        │
+                    │ - Streams           │
+                    │ - Pub/Sub           │
+                    │ - Session / State   │
+                    └────────────────────┘
+'''
