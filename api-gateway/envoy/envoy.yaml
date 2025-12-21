@@ -1,0 +1,59 @@
+static_resources:
+  listeners:
+    - name: HTTPListener
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8100
+      filter_chains:
+        - filers:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                upgrade_configs:
+                  - upgrade_type: websocket
+                route_config:
+                  virtual_hosts:
+                    - name: muchup-api
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/ws/chat/"
+                          route:
+                            cluster: ws_backend
+                        - match:
+                            prefix: "/auth/"
+                          route:
+                            cluster: rest_backend
+
+                http_filters:
+                  - name: envoy.filters.http.jwt_authn
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                      providers:
+                        google_authz:
+                          issuer: "https://accounts.google.com"
+                          audiences:
+                            - "YOUR_GOOGLE_CLIENT_ID"
+                        remote_jwks:
+                          http_uri:
+                            uri: "https://www.googleapis.com/oauth2/v3/certs"
+                            cluster: google_jwks
+                            timeout: 5s
+                        from_headers:
+                          - name: Authorization
+                            value_prefix: "Bearer "
+                        payload_in_metadata: jwt_payload
+                    rules:
+                      - match:
+                          prefix: "/ws/chat/"
+                        requires:
+                          provider_name: google_authz
+
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      http_service:
+                        server_uri: https://muchup.com/authz:8099
+                        cluster: muchup-authz-service
