@@ -56,4 +56,60 @@ static_resources:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
                       http_service:
                         server_uri: https://muchup.com/authz:8099
-                        cluster: muchup-authz-service
+                        cluster: authz-service
+                        timeout: 2s
+                      authorization_request:
+                        allowed_headers:
+                          patterns:
+                            - exact: ":path"
+                            - exact: "authorization"
+                      authorization_response:
+                        allowd_upstream_headers:
+                          - exact: "x-user-id"
+                          - exact: "x-room-id"
+                  - name: envoy.filters.http.router
+
+  cluster:
+    - name: ws_backend
+      connect_timeout: 5s
+      type: logical_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: ws_backend
+        endpoint:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: bakend
+                      port_value: 8070
+
+    - name: google_jwks
+      connect_timeout: 5s
+      type: logical_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: google_jwks
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: www.googleapis.com
+                      port_balue: 443
+      transport_socket:
+        name: envoy.transport_sockets.tls
+
+    - name: authz-service
+      connect_timeout: 5s
+      type: logical_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: authz-service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: https://muchup.com/authz
+                      port_value: 8099
