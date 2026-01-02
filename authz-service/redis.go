@@ -14,7 +14,7 @@ var (
 
 func InitRedis () {
 	rdb = redis.NewClient(&redis.Options{
-		Addr: os.Getenv(""),
+		Addr: os.Getenv("REDIS_PORT"),
 		Password: "",
 		DB: 0,})
 }

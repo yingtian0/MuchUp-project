@@ -35,6 +35,7 @@ func  JWTVerification(r http.Request) (*CustomCraim,error){
 	if err != nil || !(token.Valid){
 		return  nil, fmt.Errorf("faild to parse token error: %w",err)
 	} else if claims,ok := token.Claims.(CustomCraim); ok {
+		return &claims,nil
 	}
 
 	return &CustomCraim{} ,nil
