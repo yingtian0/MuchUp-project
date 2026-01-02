@@ -21,8 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	ChatService_GetMessages_FullMethodName = "/chat.v1.ChatService/GetMessages"
 	ChatService_SendMessage_FullMethodName = "/chat.v1.ChatService/SendMessage"
-	ChatService_JoinRoom_FullMethodName    = "/chat.v1.ChatService/JoinRoom"
-	ChatService_LeaveRoom_FullMethodName   = "/chat.v1.ChatService/LeaveRoom"
+	ChatService_MatchRoom_FullMethodName   = "/chat.v1.ChatService/MatchRoom"
 )
 
 // ChatServiceClient is the client API for ChatService service.
@@ -31,8 +30,7 @@ const (
 type ChatServiceClient interface {
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
-	JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*JoinRoomResponse, error)
-	LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*LeaveRoomResponse, error)
+	MatchRoom(ctx context.Context, in *MatchRoomRequest, opts ...grpc.CallOption) (*MatchRoomResponse, error)
 }
 
 type chatServiceClient struct {
@@ -63,20 +61,10 @@ func (c *chatServiceClient) SendMessage(ctx context.Context, in *SendMessageRequ
 	return out, nil
 }
 
-func (c *chatServiceClient) JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*JoinRoomResponse, error) {
+func (c *chatServiceClient) MatchRoom(ctx context.Context, in *MatchRoomRequest, opts ...grpc.CallOption) (*MatchRoomResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(JoinRoomResponse)
-	err := c.cc.Invoke(ctx, ChatService_JoinRoom_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*LeaveRoomResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LeaveRoomResponse)
-	err := c.cc.Invoke(ctx, ChatService_LeaveRoom_FullMethodName, in, out, cOpts...)
+	out := new(MatchRoomResponse)
+	err := c.cc.Invoke(ctx, ChatService_MatchRoom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +77,7 @@ func (c *chatServiceClient) LeaveRoom(ctx context.Context, in *LeaveRoomRequest,
 type ChatServiceServer interface {
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
-	JoinRoom(context.Context, *JoinRoomRequest) (*JoinRoomResponse, error)
-	LeaveRoom(context.Context, *LeaveRoomRequest) (*LeaveRoomResponse, error)
+	MatchRoom(context.Context, *MatchRoomRequest) (*MatchRoomResponse, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -107,11 +94,8 @@ func (UnimplementedChatServiceServer) GetMessages(context.Context, *GetMessagesR
 func (UnimplementedChatServiceServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendMessage not implemented")
 }
-func (UnimplementedChatServiceServer) JoinRoom(context.Context, *JoinRoomRequest) (*JoinRoomResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method JoinRoom not implemented")
-}
-func (UnimplementedChatServiceServer) LeaveRoom(context.Context, *LeaveRoomRequest) (*LeaveRoomResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method LeaveRoom not implemented")
+func (UnimplementedChatServiceServer) MatchRoom(context.Context, *MatchRoomRequest) (*MatchRoomResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MatchRoom not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 func (UnimplementedChatServiceServer) testEmbeddedByValue()                     {}
@@ -170,38 +154,20 @@ func _ChatService_SendMessage_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChatService_JoinRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JoinRoomRequest)
+func _ChatService_MatchRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MatchRoomRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServiceServer).JoinRoom(ctx, in)
+		return srv.(ChatServiceServer).MatchRoom(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChatService_JoinRoom_FullMethodName,
+		FullMethod: ChatService_MatchRoom_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).JoinRoom(ctx, req.(*JoinRoomRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_LeaveRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LeaveRoomRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).LeaveRoom(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_LeaveRoom_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).LeaveRoom(ctx, req.(*LeaveRoomRequest))
+		return srv.(ChatServiceServer).MatchRoom(ctx, req.(*MatchRoomRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -222,12 +188,8 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChatService_SendMessage_Handler,
 		},
 		{
-			MethodName: "JoinRoom",
-			Handler:    _ChatService_JoinRoom_Handler,
-		},
-		{
-			MethodName: "LeaveRoom",
-			Handler:    _ChatService_LeaveRoom_Handler,
+			MethodName: "MatchRoom",
+			Handler:    _ChatService_MatchRoom_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

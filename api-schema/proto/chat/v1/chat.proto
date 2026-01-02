@@ -20,21 +20,13 @@ service ChatService {
     };
   }
 
-  rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse) {
+  rpc MatchRoom (MatchRoomRequest) returns (MatchRoomResponse) {
     option (google.api.http) = {
-      post: "/v1/chat/rooms/{room_id}/join"
-      body: "*"
-    };
-  }
-
-  rpc LeaveRoom (LeaveRoomRequest) returns (LeaveRoomResponse) {
-    option (google.api.http) = {
-      post: "/v1/chat/rooms/{room_id}/leave"
+      post: "/v1/chat/match"
       body: "*"
     };
   }
 }
-
 
 message Message {
           string message_id = 1;
@@ -65,22 +57,11 @@ message SendMessageResponse {
 }
 
 
-message JoinRoomRequest {
+message MatchRoomRequest {
           string user_id = 1;
-          string room_id = 2;
 }
 
-
-message JoinRoomResponse {
-          string room_id = 1;
-}
-
-message LeaveRoomRequest {
-          string user_id = 1;
-          string room_id = 2;
-}
-
-
-message LeaveRoomResponse{
-          string room_id = 1;
+message MatchRoomResponse {
+  string owner_id = 1;
+  string rooom_id = 2;
 }
