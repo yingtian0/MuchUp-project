@@ -1,3 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --ink: #2b2620;
+  --muted: #6a5f52;
+  --paper: #f6f1e7;
+  --accent: #d7815f;
+  --accent-strong: #b04b2f;
+  --mint: #c9d8c5;
+}
+
+body {
+  font-family: "Space Grotesk", "Noto Sans JP", sans-serif;
+  background: radial-gradient(1200px 700px at 20% -10%, #fff2d9 0%, #f6f1e7 50%, #efe5d7 100%);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: "Fraunces", "Noto Serif JP", serif;
+}
+
+.card-surface {
+  background: #fffaf2;
+  box-shadow: 0 24px 60px rgba(43, 38, 32, 0.16);
+}

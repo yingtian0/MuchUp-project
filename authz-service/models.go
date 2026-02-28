@@ -1,11 +1,18 @@
 package authzservice
 
-import "time"
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
+type SignupRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
-type RoomState struct {
-	RoomID string `json:"room_id"`
-	OwnerID string `json:"owner_id"`
-	IsFull bool `json:"is_full"`
-	CreatedAt time.Time `json:"created_at"`
+type AuthResponse struct {
+	Token    string `json:"token"`
+	UserID   string `json:"userId"`
+	Username string `json:"username"`
 }

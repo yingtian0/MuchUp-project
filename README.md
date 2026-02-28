@@ -9,17 +9,17 @@ Envoy を API Gateway としたマイクロサービス構成により、
 
 ---
 
-## ✨ コンセプト
+## コンセプト
 
-- 👥 **5 人ランダムマッチング**
-- 💬 **WebSocket によるリアルタイムチャット**
-- 🤖 **AI が会話を解析し、空気を和らげる / 盛り上げる**
-- 🔐 **API Gateway 集約型の認証・制御**
-- 📈 **Observability による運用前提設計**
+- 5 人ランダムマッチング
+- WebSocket によるリアルタイムチャット
+- AI が会話を解析し、空気を和らげる / 盛り上げる
+- API Gateway 集約型の認証・制御
+- Observability による運用前提設計
 
 ---
 
-## 🏗️ 全体アーキテクチャ
+## 全体アーキテクチャ
 
 ```text
 ┌────────────────────────────┐
@@ -33,14 +33,9 @@ Envoy を API Gateway としたマイクロサービス構成により、
 ┌──────────────────────────────────────────┐
 │           Envoy API Gateway               │
 │                                          │
-│  :9000  AuthZ Port                        │
-│    - ext_authz (gRPC) ───────────────┐   │
-│                                      │   │
-│  :9001  REST API Port                 │   │
-│    - Routing / Rate Limit             │   │
-│                                      │   │
-│  :9002  WebSocket Port                │   │
-│    - WebSocket Upgrade                │   │
+│  - JWT AuthN (jwt_authn)                  │
+│  - Routing / Rate Limit                   │
+│  - WebSocket Upgrade                      │
 └─────────────┬────────────────────────┬──┘
               │                        │
               │ gRPC                   │ gRPC
@@ -69,10 +64,7 @@ Envoy を API Gateway としたマイクロサービス構成により、
                     │ - Pub/Sub           │
                     │ - Session / State   │
                     └────────────────────┘
-'''
-
-
-- redisだけにroomの状態をもたせる　単一trust
-- envoyでgatewayを定義してそこでリクエストをすべて認可、認証する　ビジネスロジックは外部を気にしない
-
 ```
+
+- redis だけに room の状態を持たせる（単一 trust）
+- envoy で gateway を定義してそこでリクエストをすべて認可・認証する。ビジネスロジックは外部を気にしない

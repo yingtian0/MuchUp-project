@@ -25,7 +25,7 @@ static_resources:
                         - match:
                             prefix: "/auth/"
                           route:
-                            cluster: rest_backend
+                            cluster: auth_backend
 
                 http_filters:
                   - name: envoy.filters.http.jwt_authn
@@ -51,22 +51,6 @@ static_resources:
                         requires:
                           provider_name: google_authz
 
-                  - name: envoy.filters.http.ext_authz
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-                      http_service:
-                        server_uri: https://muchup.com/authz:8099
-                        cluster: authz-service
-                        timeout: 2s
-                      authorization_request:
-                        allowed_headers:
-                          patterns:
-                            - exact: ":path"
-                            - exact: "authorization"
-                      authorization_response:
-                        allowd_upstream_headers:
-                          - exact: "x-user-id"
-                          - exact: "x-room-id"
                   - name: envoy.filters.http.router
 
   cluster:
@@ -84,6 +68,20 @@ static_resources:
                       address: bakend
                       port_value: 8070
 
+    - name: auth_backend
+      connect_timeout: 5s
+      type: logical_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: auth_backend
+        endpoint:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: authz-service
+                      port_value: 8099
+
     - name: google_jwks
       connect_timeout: 5s
       type: logical_dns
@@ -99,17 +97,3 @@ static_resources:
                       port_balue: 443
       transport_socket:
         name: envoy.transport_sockets.tls
-
-    - name: authz-service
-      connect_timeout: 5s
-      type: logical_dns
-      lb_policy: round_robin
-      load_assignment:
-        cluster_name: authz-service
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: https://muchup.com/authz
-                      port_value: 8099

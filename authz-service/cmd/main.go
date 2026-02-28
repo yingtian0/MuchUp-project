@@ -7,17 +7,17 @@ import (
 	authz "muchup.com/authz"
 )
 
-func main () {
+func main() {
+	store := authz.NewUserStore()
 
-    mux := http.NewServeMux()
+	mux := http.NewServeMux()
+	mux.Handle("/auth/login", authz.LoginHandler(store))
+	mux.Handle("/auth/signup", authz.SignupHandler(store))
+	mux.Handle("/healthz", authz.HandlerFunc(authz.HealthHandler))
 
-    mux.Handle("/authz",authz.HandlerFunc(authz.AuthorizationHandler))
-
-    server := &http.Server{
-	Addr: ":8099",
-	Handler: mux,
-
-    }
-    log.Fatal(server.ListenAndServe())
-
+	server := &http.Server{
+		Addr:    ":8099",
+		Handler: mux,
+	}
+	log.Fatal(server.ListenAndServe())
 }

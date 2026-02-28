@@ -29,7 +29,7 @@ y-chat-app/
 │       ├── usecase/
 │       │   ├── matching.go      # 5人マッチング
 │       │   ├── chat.go          # publish/subscribe, fanout, AI判定
-│       │   └── auth.go          # token validate（ext_authz用もここ）
+│       │   └── auth.go          # token validate（proxyのjwt_authnに合わせる）
 │       ├── adapter/
 │       │   ├── handler/         # HTTP/WS ハンドラ (DTO<->Domain)
 │       │   ├── presenter/       # レスポンス整形（必要なら）

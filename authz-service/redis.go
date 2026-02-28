@@ -24,27 +24,26 @@ else
 end
 `)
 
-func InitRedis () {
+func InitRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_PORT"),
+		Addr:     os.Getenv("REDIS_ADDR"),
 		Password: "",
-		DB: 0,})
+		DB:       0,
+	})
 }
 
-
-func LockProccss(rdb redis.Client,key string,ttl time.Duration) (string,bool,error) {
+func LockProcess(client *redis.Client, key string, ttl time.Duration) (string, bool, error) {
 
 	value := uuid.NewString()
-	ok,err := rdb.SetNX(ctx,value,key,ttl).Result()
+	ok, err := client.SetNX(ctx, key, value, ttl).Result()
 	if err != nil || !ok {
-		return "",false,fmt.Errorf("faild to lock Redis process:%w",err)
+		return "", false, fmt.Errorf("failed to lock redis process: %w", err)
 	}
 
-	return value,true,nil
+	return value, true, nil
 }
 
-func UnlockProcess(rdb redis.Client,key,value string) error {
-	_, err := unlockScript.Run(ctx, rdb, []string{key}, value).Result()
+func UnlockProcess(client *redis.Client, key, value string) error {
+	_, err := unlockScript.Run(ctx, client, []string{key}, value).Result()
 	return err
 }
-
