@@ -23,42 +23,40 @@ func TestHandler_CreateUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	mockUserUsecase := mock_usecase.NewMockUserUsecase(ctrl)
 	mockMessageUsecase := mock_usecase.NewMockMessageUsecase(ctrl)
 	appLogger := logger.NewLogger()
 
-
-	handler := NewHandler(mockUserUsecase,mockMessageUsecase,appLogger)
+	handler := NewHandler(mockUserUsecase, mockMessageUsecase, appLogger)
 
 	reqbody := `{"name":"testname","email":"test@example.com","password":"testpasswordhash"}`
 
-	req := httptest.NewRequest(http.MethodPost,"/api/v1/users",strings.NewReader(reqbody))
-	req.Header.Set("Content-Type","application/json")
-	w :=  httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/users", strings.NewReader(reqbody))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
 
 	mockUserUsecase.EXPECT().
-	CreateUser(gomock.Any()).
-	Return(&entity.User{
-		ID:"mock_ID",
-		NickName: "testname",
-		Email: utils.StringPtr("test@example.com"),
-		},nil)
+		CreateUser(gomock.Any()).
+		Return(&entity.User{
+			ID:       "mock_ID",
+			NickName: "testname",
+			Email:    utils.StringPtr("test@example.com"),
+		}, nil)
 
-	handler.CreateUser(w,req)
+	handler.CreateUser(w, req)
 
 	res := w.Result()
 	defer res.Body.Close()
 
-	assert.Equal(t,http.StatusCreated,res.StatusCode)
+	assert.Equal(t, http.StatusCreated, res.StatusCode)
 
-    var createUserRequest CreateUserRequest
-	bodyBytes,_ := io.ReadAll(res.Body)
+	var response Response
+	bodyBytes, _ := io.ReadAll(res.Body)
 
-    err := json.Unmarshal(bodyBytes,&createUserRequest)
-	require.NoError(t,err)
-	
+	err := json.Unmarshal(bodyBytes, &response)
+	require.NoError(t, err)
 
-
-	assert.Equal(t,"test@example.com",createUserRequest.Email)
+	responseData, ok := response.Data.(map[string]interface{})
+	require.True(t, ok)
+	assert.Equal(t, "test@example.com", responseData["Email"])
 }

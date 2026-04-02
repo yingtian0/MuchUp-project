@@ -10,15 +10,18 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -155,31 +158,105 @@ func (h *Handler) HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("codes")
-          token,err := googleOAuthConfig.Exchange(context.Background(),code)
-	if err != nil {
-	http.Error(w,"token exchange failed in GoogleOAuth",http.StatusInternalServerError)
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		code = r.URL.Query().Get("codes")
+	}
+	if code == "" {
+		h.sendErrorResponse(w, http.StatusBadRequest, "Missing authorization code")
 		return
 	}
-	idToken := token.Extra("it_token").(string)
+
+	token, err := googleOAuthConfig.Exchange(context.Background(), code)
+	if err != nil {
+		h.logger.Error("Google token exchange failed", err)
+		h.sendErrorResponse(w, http.StatusInternalServerError, "Google authentication failed")
+		return
+	}
+
+	idToken, ok := token.Extra("id_token").(string)
+	if !ok || idToken == "" {
+		idToken, ok = token.Extra("it_token").(string)
+	}
+	if !ok || idToken == "" {
+		h.sendErrorResponse(w, http.StatusInternalServerError, "Google ID token not found")
+		return
+	}
+
 	claim := struct {
-	  Sub string `json:"sub"`
-	  Email string  `json:"email"`
-	  Name *string `json:"name"`
-	  ProfilePicture map[string]interface{} `json:"profile_picture"`
+		Sub           string `json:"sub"`
+		Email         string `json:"email"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+		EmailVerified bool   `json:"email_verified"`
 	}{}
-	parts := strings.Split(idToken,".")
-	payload,err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-	http.Error(w,"token decode to paiyload failed payload",http.StatusInternalServerError)
-		return 
+
+	parts := strings.Split(idToken, ".")
+	if len(parts) < 2 {
+		h.sendErrorResponse(w, http.StatusInternalServerError, "Invalid Google ID token")
+		return
 	}
-	_ = json.Unmarshal(payload,&claim)
-	user,err := h.userUsecase.GetUserByEmail(claim.Email)
+
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
-	http.Error(w,"token decode to paiyload failed payload",http.StatusInternalServerError)
-		return 
+		h.logger.Error("Failed to decode Google token payload", err)
+		h.sendErrorResponse(w, http.StatusInternalServerError, "Failed to decode Google token")
+		return
 	}
+	if err := json.Unmarshal(payload, &claim); err != nil {
+		h.logger.Error("Failed to parse Google token payload", err)
+		h.sendErrorResponse(w, http.StatusInternalServerError, "Failed to parse Google token")
+		return
+	}
+	if claim.Email == "" {
+		h.sendErrorResponse(w, http.StatusBadRequest, "Google account email is missing")
+		return
+	}
+
+	user, err := h.userUsecase.GetUserByEmail(claim.Email)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			h.logger.Error("Failed to load user by Google email", err)
+			h.sendErrorResponse(w, http.StatusInternalServerError, "Failed to load user")
+			return
+		}
+
+		nickname := claim.Name
+		if nickname == "" {
+			nickname = strings.Split(claim.Email, "@")[0]
+		}
+
+		user = &entity.User{
+			ID:            uuid.NewString(),
+			NickName:      nickname,
+			Email:         &claim.Email,
+			PasswordHash:  uuid.NewString(),
+			AvatarURL:     nil,
+			UsagePurpose:  "google_oauth",
+			IsActive:      true,
+			EmailVerified: claim.EmailVerified,
+			AuthMethod:    entity.AuthMethodEmail,
+		}
+		if claim.Picture != "" {
+			user.AvatarURL = &claim.Picture
+		}
+
+		user, err = h.userUsecase.CreateUser(user)
+		if err != nil {
+			h.logger.Error("Failed to create Google user", err)
+			h.sendErrorResponse(w, http.StatusInternalServerError, "Failed to create user")
+			return
+		}
+	}
+
+	user.PasswordHash = ""
+	response := map[string]interface{}{
+		"token":      "dummy-jwt-token",
+		"expires_at": time.Now().Add(24 * time.Hour).Unix(),
+		"user":       user,
+	}
+
+	h.sendSuccessResponse(w, http.StatusOK, response, "Google login successful")
 }
 
 // @Summary UserIDからユーザーを取得

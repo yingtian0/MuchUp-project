@@ -43,7 +43,6 @@ func (m *MockUserUsecase) CreateUser(user *entity.User) (*entity.User, error) {
 	return ret0, ret1
 }
 
-
 // CreateUser indicates an expected call of CreateUser.
 func (mr *MockUserUsecaseMockRecorder) CreateUser(user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
@@ -77,6 +76,21 @@ func (m *MockUserUsecase) GetUserByID(id string) (*entity.User, error) {
 func (mr *MockUserUsecaseMockRecorder) GetUserByID(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserUsecase)(nil).GetUserByID), id)
+}
+
+// GetUserByEmail mocks base method.
+func (m *MockUserUsecase) GetUserByEmail(email string) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByEmail", email)
+	ret0, _ := ret[0].(*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockUserUsecaseMockRecorder) GetUserByEmail(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserUsecase)(nil).GetUserByEmail), email)
 }
 
 // GetUsers mocks base method.

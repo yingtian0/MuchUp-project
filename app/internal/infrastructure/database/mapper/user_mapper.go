@@ -1,10 +1,12 @@
 package mapper
+
 import (
-	"encoding/json"
-	"log"
 	"MuchUp/backend/internal/domain/entity"
 	"MuchUp/backend/internal/infrastructure/database/schema"
+	"encoding/json"
+	"log"
 )
+
 func ToUserSchema(user *entity.User) *schema.UserSchema {
 	var profileJSON json.RawMessage
 	if user.PersonalityProfile != nil {
@@ -20,8 +22,14 @@ func ToUserSchema(user *entity.User) *schema.UserSchema {
 		ID:                 user.ID,
 		NickName:           user.NickName,
 		Email:              user.Email,
+		PhoneNumber:        user.PhoneNumber,
 		PasswordHash:       user.PasswordHash,
+		EmailVerified:      user.EmailVerified,
+		PhoneVerified:      user.PhoneVerified,
+		PrimaryAuthMethod:  string(user.AuthMethod),
+		AvatarURL:          user.AvatarURL,
 		UsagePurpose:       user.UsagePurpose,
+		IsActive:           user.IsActive,
 		PersonalityProfile: profileJSON,
 		CreatedAt:          user.CreatedAt,
 		UpdatedAt:          user.UpdatedAt,
@@ -36,8 +44,14 @@ func ToUserEntity(userSchema *schema.UserSchema) *entity.User {
 		ID:                 userSchema.ID,
 		NickName:           userSchema.NickName,
 		Email:              userSchema.Email,
+		PhoneNumber:        userSchema.PhoneNumber,
 		PasswordHash:       userSchema.PasswordHash,
+		AvatarURL:          userSchema.AvatarURL,
 		UsagePurpose:       userSchema.UsagePurpose,
+		IsActive:           userSchema.IsActive,
+		EmailVerified:      userSchema.EmailVerified,
+		PhoneVerified:      userSchema.PhoneVerified,
+		AuthMethod:         entity.PrimaryAuthMethod(userSchema.PrimaryAuthMethod),
 		PersonalityProfile: profile,
 		CreatedAt:          userSchema.CreatedAt,
 		UpdatedAt:          userSchema.UpdatedAt,
