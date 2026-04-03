@@ -24,46 +24,49 @@ Envoy を API Gateway としたマイクロサービス構成により、
 ```text
 ┌────────────────────────────┐
 │        Browser (SPA)        │
-│  - HTTPS (REST)             │
+│  - HTTPS (REST/JSON)        │
 │  - WebSocket                │
 └─────────────┬──────────────┘
               │
-              │ HTTPS / WebSocket
               v
 ┌──────────────────────────────────────────┐
 │           Envoy API Gateway               │
-│                                          │
-│  - JWT AuthN (jwt_authn)                  │
-│  - Routing / Rate Limit                   │
-│  - WebSocket Upgrade                      │
-└─────────────┬────────────────────────┬──┘
-              │                        │
-              │ gRPC                   │ gRPC
-              v                        v
-┌───────────────────────┐      ┌───────────────────────┐
-│     Backend API       │      │      AI Service        │
-│        (Go)           │      │       (Python)         │
-│  - Business Logic     │      │  - Prompt / Tooling   │
-│  - REST → gRPC        │      │                       │
-└───────────┬───────────┘      └───────────┬───────────┘
-            │                              │
-            │ gRPC                         │ gRPC
-            └──────────────┬───────────────┘
-                           v
-                  ┌───────────────────────┐
-                  │      LLM Service       │
-                  │  (Internal / External) │
-                  │  - gRPC API            │
-                  └───────────┬───────────┘
-                              │
-                              │
-                              v
-                    ┌────────────────────┐
-                    │        Redis        │
-                    │ - Streams           │
-                    │ - Pub/Sub           │
-                    │ - Session / State   │
-                    └────────────────────┘
+│  - JWT verification                       │
+│  - Rate limit / Routing                   │
+│  - WebSocket upgrade                      │
+└─────────────┬────────────────────────────┘
+              │
+              │ HTTPS / REST
+              v
+┌──────────────────────────────────────────┐
+│          Main API / Backend API           │
+│                  (Go)                     │
+│  - Business logic                         │
+│  - Room/tenant authorization              │
+│  - Session orchestration                  │
+│  - REST endpoint for browser              │
+└─────────────┬────────────────────────────┘
+              │
+              │ gRPC
+              v
+┌──────────────────────────────────────────┐
+│               AI Service                  │
+│                (Python)                   │
+│  - Prompt assembly                        │
+│  - Tool execution                         │
+│  - LLM request normalization              │
+└─────────────┬────────────────────────────┘
+              │
+              │ gRPC or HTTPS
+              v
+┌──────────────────────────────────────────┐
+│               LLM Service                 │
+│         (internal or external)            │
+└──────────────────────────────────────────┘
+
+                   + Redis
+          - ephemeral room/session state
+          - streams / pubsub / cache
 ```
 
 - redis だけに room の状態を持たせる（単一 trust）
