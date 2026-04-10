@@ -10,7 +10,7 @@ import (
 
 var secretKey = []byte("jwt_scret_key")
 
-var tokenTTL = 24 * time.Hour
+var tokenTTL = 1 * time.Hour
 
 func init() {
 	if v := os.Getenv("JWT_SECRET"); v != "" {
