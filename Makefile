@@ -1,29 +1,35 @@
 PROTO_DIR=api-schema/proto
-GO_OUT=gen/go
-GOOGLEAPIS=third_party/googleapis
+  GO_OUT=gen/go
+  GOOGLEAPIS=third_party/googleapis
+  DESCRIPTOR_OUT=api-gateway/envoy/proto/api.pb
 
+  PROTO_FILES = \
+        $(PROTO_DIR)/chat/v1/chat.proto \
+        $(PROTO_DIR)/auth/v1/auth.proto
 
-.PHONY: gen lint breaking clean proto
+  .PHONY: proto gen lint breaking descriptor clean
 
-gen:
-	buf generate
+  proto: gen descriptor
 
-lint:
-	buf lint
+  gen:
+        buf generate
 
-breaking:
-	buf breaking --against '.git#branch=main'
+  lint:
+        buf lint
 
-clean:
-	rm -rf gen/*
+  breaking:
+        buf breaking --against '.git#branch=main'
 
-proto:
-	protoc \
-	  -I $(PROTO_DIR) \
-	  -I $(GOOGLEAPIS) \
-	  --go_out $(GO_OUT) --go_opt paths=source_relative \
-	  --go-grpc_out $(GO_OUT) --go-grpc_opt paths=source_relative \
-	  --grpc-gateway_out $(GO_OUT) --grpc-gateway_opt paths=source_relative \
-	  $(PROTO_DIR)/chat/v1/chat.proto \
-	  $(PROTO_DIR)/auth/v1/auth.proto
+  descriptor:
+        mkdir -p $(dir $(DESCRIPTOR_OUT))
+        protoc \
+                -I $(PROTO_DIR) \
+                -I $(GOOGLEAPIS) \
+                --include_imports \
+                --include_source_info \
+                --descriptor_set_out=$(DESCRIPTOR_OUT) \
+                $(PROTO_FILES)
 
+  clean:
+        rm -rf $(GO_OUT)/*
+        rm -f $(DESCRIPTOR_OUT)
