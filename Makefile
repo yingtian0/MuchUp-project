@@ -7,18 +7,12 @@ PROTO_DIR=api-schema/proto
         $(PROTO_DIR)/chat/v1/chat.proto \
         $(PROTO_DIR)/auth/v1/auth.proto
 
-  .PHONY: proto gen lint breaking descriptor clean
+  .PHONY: proto gen descriptor lint breaking clean
 
   proto: gen descriptor
 
   gen:
         buf generate
-
-  lint:
-        buf lint
-
-  breaking:
-        buf breaking --against '.git#branch=main'
 
   descriptor:
         mkdir -p $(dir $(DESCRIPTOR_OUT))
@@ -29,6 +23,12 @@ PROTO_DIR=api-schema/proto
                 --include_source_info \
                 --descriptor_set_out=$(DESCRIPTOR_OUT) \
                 $(PROTO_FILES)
+
+  lint:
+        buf lint
+
+  breaking:
+        buf breaking --against '.git#branch=main'
 
   clean:
         rm -rf $(GO_OUT)/*
