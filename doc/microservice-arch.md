@@ -8,6 +8,7 @@
             │   Envoy Gateway     │
             │  - Auth / Session   │
             │  - Rate Limit       │
+            │  - HTTP → gRPC │
             │  - HTTP → WebSocket │
             │  - TLS Termination  │
             └─────┬───────────────┘
