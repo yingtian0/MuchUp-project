@@ -13,12 +13,9 @@ service ChatService {
     };
   }
 
-  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {
-    option (google.api.http) = {
-      post: "/v1/chat/rooms/{room_id}/messages"
-      body: "*"
-    };
-  }
+  // Chat delivery itself is handled over WebSocket, so this RPC is not
+  // exposed through Envoy's REST transcoding.
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
 
   rpc MatchRoom (MatchRoomRequest) returns (MatchRoomResponse) {
     option (google.api.http) = {
@@ -29,39 +26,46 @@ service ChatService {
 }
 
 message Message {
-          string message_id = 1;
-          string sender_id = 2;
-          string text = 3;
-          int64 created_at = 4;
+  string message_id = 1;
+  string sender_id = 2;
+  string text = 3;
+  // Unix time in seconds.
+  int64 created_at = 4;
 }
 
 message GetMessagesRequest {
-          string room_id = 2;
+  string room_id = 2;
 }
 
 message GetMessagesResponse {
-          repeated Message message = 1;
+  repeated Message message = 1;
 }
 
 message SendMessageRequest {
-          string user_id = 1;
-          string room_id = 2;
-          string text = 3;
+  reserved 1;
+  reserved "user_id";
 
+  string room_id = 2;
+  string text = 3;
 }
 
 message SendMessageResponse {
   string room_id = 1;
   string message_id = 2;
+  // Unix time in seconds.
   int64 created_at = 3;
 }
 
 
 message MatchRoomRequest {
-          string user_id = 1;
+  reserved 1;
+  reserved "user_id";
 }
 
 message MatchRoomResponse {
   string owner_id = 1;
-  string rooom_id = 2;
+  reserved 2;
+  reserved "rooom_id";
+
+  string room_id = 3;
 }
