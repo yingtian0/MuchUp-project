@@ -33,6 +33,24 @@ func (r *chatGroupRepository) GetGroupByID(id string) (*entity.ChatGroup, error)
 	}
 	return mapper.ToGroupEntity(&groupSchema), nil
 }
+
+func (r *chatGroupRepository) GetGroupByUserID(userID string) ([]*entity.ChatGroup, error) {
+	var groupSchemas []schema.ChatGroupSchema
+	err := r.db.
+		Joins("JOIN user_chat_groups ON user_chat_groups.chat_group_id = chat_groups.id").
+		Where("user_chat_groups.user_id = ?", userID).
+		Preload("Users").
+		Find(&groupSchemas).Error
+	if err != nil {
+		return nil, err
+	}
+
+	groups := make([]*entity.ChatGroup, 0, len(groupSchemas))
+	for i := range groupSchemas {
+		groups = append(groups, mapper.ToGroupEntity(&groupSchemas[i]))
+	}
+	return groups, nil
+}
 func (r *chatGroupRepository) FindGroupWithAvailableSlots() (*entity.ChatGroup, error) {
 	var groupSchema schema.ChatGroupSchema
 	err := r.db.Preload("Users").

@@ -5,7 +5,7 @@ import (
 	group_service "MuchUp/backend/internal/application/service/group"
 	message_service "MuchUp/backend/internal/application/service/message"
 	user_service "MuchUp/backend/internal/application/service/user"
-	grpc_controller "MuchUp/backend/internal/controllers/grpc/v2"
+	grpc_controller "MuchUp/backend/internal/controllers/grpc/v1"
 	rest_controller "MuchUp/backend/internal/controllers/http/v1"
 	"MuchUp/backend/internal/infrastructure/database"
 	"MuchUp/backend/internal/infrastructure/database/repositories"
@@ -40,7 +40,7 @@ func main() {
 	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
 
-	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, appLogger)
+	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)
 
 	go server.StartGRPCServer(config, appLogger, grpcHandler)
 	go server.StartHTTPServer(config, appLogger, RestHandler.SetupRoutes(JWTValidator))

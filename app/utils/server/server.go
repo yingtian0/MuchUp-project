@@ -5,4 +5,7 @@ import (
 	"MuchUp/backend/pkg/logger"
 )
 
-func StartGRPCserver(cfg *config.Config,logger *logger.Logger,)
+func StartGRPCserver(cfg *config.Config, appLogger logger.Logger) {
+	_ = cfg
+	_ = appLogger
+}

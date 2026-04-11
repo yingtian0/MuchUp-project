@@ -76,7 +76,7 @@ const Chat: React.FC = () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await chatApi.matchRoom(userId);
+      const res = await chatApi.matchRoom();
       setRoomId(res.roomId);
       setOwnerId(res.ownerId);
       addRoomHistory({

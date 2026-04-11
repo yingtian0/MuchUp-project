@@ -23,6 +23,7 @@ type MessageRepository interface {
 type ChatGroupRepository interface {
 	CreateGroup(group *entity.ChatGroup) (*entity.ChatGroup, error)
 	GetGroupByID(id string) (*entity.ChatGroup, error)
+	GetGroupByUserID(userID string) ([]*entity.ChatGroup, error)
 	AddUserToGroup(userID, groupID string) error
 	FindGroupWithAvailableSlots() (*entity.ChatGroup, error)
 }

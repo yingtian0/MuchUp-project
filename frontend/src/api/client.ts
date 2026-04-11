@@ -83,28 +83,28 @@ class AuthApi extends BaseApi {
    * ユーザーログイン
    */
   async login(req: LoginRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/auth/login", "POST", req);
+    return this.request<AuthResponse>("/v1/auth/login", "POST", req);
   }
 
   /**
    * ユーザー登録
    */
   async signup(req: SignupRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/auth/signup", "POST", req);
+    return this.request<AuthResponse>("/v1/auth/signup", "POST", req);
   }
 }
 
 class ChatApi extends BaseApi {
-  async matchRoom(userId: string): Promise<MatchRoomResponse> {
-    const res = await this.request<{ owner_id: string; rooom_id: string }>(
+  async matchRoom(): Promise<MatchRoomResponse> {
+    const res = await this.request<{ owner_id: string; room_id: string }>(
       "/v1/chat/match",
       "POST",
-      { user_id: userId }
+      {}
     );
 
     return {
       ownerId: res.owner_id,
-      roomId: res.rooom_id,
+      roomId: res.room_id,
     };
   }
 
@@ -122,6 +122,7 @@ class ChatApi extends BaseApi {
     }));
   }
 
+  // Legacy fallback until the browser-side WebSocket auth/connect flow is wired.
   async sendMessage(params: {
     userId: string;
     roomId: string;
