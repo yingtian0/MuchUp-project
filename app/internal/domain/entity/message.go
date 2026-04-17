@@ -1,21 +1,24 @@
 package entity
+
 import (
+	"MuchUp/app/utils"
 	"errors"
 	"time"
-	"MuchUp/backend/utils"
 )
+
 type Message struct {
-	MessageID string  `json:"message_id"`
-	SenderID  string  `json:"user_id"`
-	GroupID   string  `json:"group_id"`
-	Text      *string `json:"text"`
-	Image     *string `json:"image"`
-	Video     *string `json:"video"`
-	Sticker   *string `json:"sticker"`
+	MessageID string    `json:"message_id"`
+	SenderID  string    `json:"user_id"`
+	GroupID   string    `json:"group_id"`
+	Text      *string   `json:"text"`
+	Image     *string   `json:"image"`
+	Video     *string   `json:"video"`
+	Sticker   *string   `json:"sticker"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	DeletedAt time.Time `json:"deleted_at"`
 }
+
 func NewMessage(userid, groupid, text string) (*Message, error) {
 	if len(text) == 0 {
 		return nil, errors.New("text is required")

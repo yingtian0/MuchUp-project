@@ -1,11 +1,15 @@
 package mocks
+
 import (
-	"MuchUp/backend/internal/domain/entity"
+	"MuchUp/app/internal/domain/entity"
+
 	"github.com/stretchr/testify/mock"
 )
+
 type MockUserRepository struct {
 	mock.Mock
 }
+
 func (m *MockUserRepository) CreateUser(user *entity.User) error {
 	args := m.Called(user)
 	return args.Error(0)

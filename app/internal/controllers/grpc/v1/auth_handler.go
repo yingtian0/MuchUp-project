@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"MuchUp/backend/internal/domain/entity"
+	"MuchUp/app/internal/domain/entity"
 
-	authv1 "MuchUp/backend/proto/gen/go/auth/v1"
+	authv1 "MuchUp/app/proto/gen/go/auth/v1"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

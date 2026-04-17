@@ -12,12 +12,12 @@ y-chat-app/
 │           └── auth.proto
 │
 ├── gen/                         # 【自動生成エリア】手動編集禁止
-│   ├── go/                      # Backend 用 (types, stubs)
+│   ├── go/                      # app 用 (types, stubs)
 │   │   └── chat/v1/
 │   ├── ts/                      # Frontend 用 (client & types)
 │   └── openapi/                 # Gateway/Docs 用 (openapi.yaml)
 │
-├── backend/                     # 【Go monolith service】
+├── app/                     # 【Go monolith service】
 │   ├── go.mod
 │   ├── cmd/
 │   │   └── server/

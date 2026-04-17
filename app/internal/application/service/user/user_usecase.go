@@ -1,18 +1,20 @@
 package user
 
 import (
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/domain/usecase"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/usecase"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
 type userUsecase struct {
 	userRepo  repository.UserRepository
 	groupRepo repository.ChatGroupRepository
 	groupUc   usecase.GroupUsecase
 }
+
 func NewUserUsecase(userRepo repository.UserRepository, groupUc usecase.GroupUsecase) usecase.UserUsecase {
 	return &userUsecase{
 		userRepo: userRepo,
@@ -37,7 +39,7 @@ func (u *userUsecase) CreateUser(user *entity.User) (*entity.User, error) {
 func (u *userUsecase) GetUserByID(id string) (*entity.User, error) {
 	return u.userRepo.GetUserByID(id)
 }
-func (u *userUsecase) GetUserByEmail(email string) (*entity.User,error) {
+func (u *userUsecase) GetUserByEmail(email string) (*entity.User, error) {
 	return u.userRepo.GetUserByEmail(email)
 }
 func (u *userUsecase) Login(email, password string) (string, error) {

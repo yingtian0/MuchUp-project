@@ -1,8 +1,8 @@
 package server
 
 import (
-	"MuchUp/backend/config"
-	"MuchUp/backend/pkg/logger"
+	"MuchUp/app/config"
+	"MuchUp/app/pkg/logger"
 )
 
 func StartGRPCserver(cfg *config.Config, appLogger logger.Logger) {

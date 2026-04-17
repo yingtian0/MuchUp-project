@@ -1,10 +1,13 @@
 package v2
+
 import (
+	"MuchUp/app/internal/domain/entity"
+	pb "MuchUp/app/proto/gen/go/v2"
 	"context"
-	"MuchUp/backend/internal/domain/entity"
-	pb "MuchUp/backend/proto/gen/go/v2"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
 func (h *GrpcHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.User, error) {
 	user := &entity.User{
 		NickName:     req.GetNickName(),

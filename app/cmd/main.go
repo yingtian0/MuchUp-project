@@ -1,18 +1,19 @@
 package main
 
 import (
-	"MuchUp/backend/config"
-	group_service "MuchUp/backend/internal/application/service/group"
-	message_service "MuchUp/backend/internal/application/service/message"
-	user_service "MuchUp/backend/internal/application/service/user"
-	grpc_controller "MuchUp/backend/internal/controllers/grpc/v1"
-	rest_controller "MuchUp/backend/internal/controllers/http/v1"
-	"MuchUp/backend/internal/infrastructure/database"
-	"MuchUp/backend/internal/infrastructure/database/repositories"
-	"MuchUp/backend/pkg/logger"
+	"MuchUp/app/config"
+	group_service "MuchUp/app/internal/application/service/group"
+	message_service "MuchUp/app/internal/application/service/message"
+	user_service "MuchUp/app/internal/application/service/user"
+	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
+	rest_controller "MuchUp/app/internal/controllers/http/v1"
+	"MuchUp/app/internal/infrastructure/database"
+	"MuchUp/app/internal/infrastructure/database/repositories"
+	"MuchUp/app/pkg/logger"
+	"log"
 
-	"MuchUp/backend/internal/infrastructure/auth"
-	"MuchUp/backend/internal/infrastructure/server"
+	"MuchUp/app/internal/infrastructure/auth"
+	"MuchUp/app/internal/infrastructure/server"
 )
 
 // @Title MuchUp API
@@ -42,6 +43,7 @@ func main() {
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)
 
+	log.Println("start serve")
 	go server.StartGRPCServer(config, appLogger, grpcHandler)
 	go server.StartHTTPServer(config, appLogger, RestHandler.SetupRoutes(JWTValidator))
 

@@ -1,10 +1,13 @@
 package v2
+
 import (
+	"MuchUp/app/internal/domain/entity"
+	pb "MuchUp/app/proto/gen/go/v2"
 	"context"
-	"MuchUp/backend/internal/domain/entity"
-	pb "MuchUp/backend/proto/gen/go/v2"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
 func (h *GrpcHandler) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.Message, error) {
 	message, err := entity.NewMessage(req.GetSenderId(), req.GetGroupId(), req.GetText())
 	if err != nil {

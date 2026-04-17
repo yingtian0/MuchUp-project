@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"MuchUp/app/pkg/auth"
 
-	"MuchUp/backend/pkg/auth"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -70,7 +70,7 @@ func (v *JWTValidator) GenerateToken(ctx context.Context, userID, groupID string
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    v.issuer,
 			Audience:  []string{v.audience},
-			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)), 
+			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 		},

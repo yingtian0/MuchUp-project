@@ -1,12 +1,14 @@
-package repository 
+package repository
+
 import (
-	"MuchUp/backend/internal/domain/entity"
+	"MuchUp/app/internal/domain/entity"
 )
+
 type GroupRepository interface {
 	CreateGroup(group *entity.ChatGroup) error
 	DeleteGroup(groupID string) error
-	GetGroupByID(groupID string) (*entity.ChatGroup,error)
-	GetGroupByUserID(userID string) ([]*entity.ChatGroup,error)		
+	GetGroupByID(groupID string) (*entity.ChatGroup, error)
+	GetGroupByUserID(userID string) ([]*entity.ChatGroup, error)
 }
 
 type GroupID struct {

@@ -1,14 +1,18 @@
 package repositories
+
 import (
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/infrastructure/database/mapper"
+	"MuchUp/app/internal/infrastructure/database/schema"
+
 	"gorm.io/gorm"
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/infrastructure/database/mapper"
-	"MuchUp/backend/internal/infrastructure/database/schema"
 )
+
 type messageRepository struct {
 	db *gorm.DB
 }
+
 func NewMessageRepository(db *gorm.DB) repository.MessageRepository {
 	return &messageRepository{db: db}
 }

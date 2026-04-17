@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/domain/usecase"
-	"MuchUp/backend/pkg/logger"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/pkg/logger"
 
-	authv1 "MuchUp/backend/proto/gen/go/auth/v1"
-	chatv1 "MuchUp/backend/proto/gen/go/chat/v1"
+	authv1 "MuchUp/app/proto/gen/go/auth/v1"
+	chatv1 "MuchUp/app/proto/gen/go/chat/v1"
 )
 
 type GrpcHandler struct {

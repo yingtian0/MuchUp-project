@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"sync"
 
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/usecase"
-	"MuchUp/backend/pkg/middleware"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/pkg/middleware"
 
 	"github.com/gorilla/websocket"
 )

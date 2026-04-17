@@ -1,8 +1,10 @@
 package mapper
+
 import (
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/infrastructure/database/schema"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/infrastructure/database/schema"
 )
+
 func ToGroupSchema(group *entity.ChatGroup) *schema.ChatGroupSchema {
 	users := make([]schema.UserSchema, len(group.Members))
 	for i, member := range group.Members {

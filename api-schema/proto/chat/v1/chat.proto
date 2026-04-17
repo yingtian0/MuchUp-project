@@ -15,7 +15,7 @@ service ChatService {
 
   // Chat delivery itself is handled over WebSocket, so this RPC is not
   // exposed through Envoy's REST transcoding.
-  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  // rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
 
   rpc MatchRoom (MatchRoomRequest) returns (MatchRoomResponse) {
     option (google.api.http) = {

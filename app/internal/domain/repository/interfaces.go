@@ -1,7 +1,6 @@
 package repository
-import "MuchUp/backend/internal/domain/entity"
 
-
+import "MuchUp/app/internal/domain/entity"
 
 type UserRepository interface {
 	CreateUser(user *entity.User) error

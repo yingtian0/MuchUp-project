@@ -1,15 +1,17 @@
 package repositories
 
 import (
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/infrastructure/database/mapper"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/infrastructure/database/mapper"
 
 	"gorm.io/gorm"
 )
+
 type userRepository struct {
 	db *gorm.DB
 }
+
 func (r *userRepository) CreateUser(user *entity.User) error {
 	userShema := mapper.ToUserSchema(user)
 	err := r.db.Create(userShema).Error

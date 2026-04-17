@@ -2,5 +2,5 @@
 
 ## Ports
 
-- ws-backend: 8070
-- auth-backend: 8099
+- ws-app: 8070
+- auth-app: 8099

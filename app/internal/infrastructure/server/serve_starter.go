@@ -5,11 +5,11 @@ import (
 	"net"
 	"net/http"
 
-	"MuchUp/backend/config"
-	grpc_controller "MuchUp/backend/internal/controllers/grpc/v1"
-	authv1 "MuchUp/backend/proto/gen/go/auth/v1"
-	chatv1 "MuchUp/backend/proto/gen/go/chat/v1"
-	"MuchUp/backend/pkg/logger"
+	"MuchUp/app/config"
+	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
+	"MuchUp/app/pkg/logger"
+	authv1 "MuchUp/app/proto/gen/go/auth/v1"
+	chatv1 "MuchUp/app/proto/gen/go/chat/v1"
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"

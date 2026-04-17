@@ -1,17 +1,21 @@
 package repositories
+
 import (
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/internal/infrastructure/database/mapper"
+	"MuchUp/app/internal/infrastructure/database/schema"
 	"errors"
 	"fmt"
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/domain/usecase"
-	"MuchUp/backend/internal/infrastructure/database/mapper"
-	"MuchUp/backend/internal/infrastructure/database/schema"
+
 	"gorm.io/gorm"
 )
+
 type chatGroupRepository struct {
 	db *gorm.DB
 }
+
 func NewChatGroupRepository(db *gorm.DB) repository.ChatGroupRepository {
 	return &chatGroupRepository{db: db}
 }

@@ -1,19 +1,22 @@
 package message
+
 import (
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/repository"
-	"MuchUp/backend/internal/domain/usecase"
-	"time"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/usecase"
 	"errors"
+	"time"
 )
+
 type messageUsecase struct {
 	messageRepo repository.MessageRepository
-	userRepo repository.UserRepository
+	userRepo    repository.UserRepository
 }
-func NewMessageUsecase(messageRepo repository.MessageRepository,userRepo repository.UserRepository) usecase.MessageUsecase {
+
+func NewMessageUsecase(messageRepo repository.MessageRepository, userRepo repository.UserRepository) usecase.MessageUsecase {
 	return &messageUsecase{
 		messageRepo: messageRepo,
-	    userRepo:userRepo,
+		userRepo:    userRepo,
 	}
 }
 func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message, error) {
@@ -25,15 +28,14 @@ func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message
 }
 
 func (u *messageUsecase) GetMessage(id string) (*entity.Message, error) {
-    return u.messageRepo.GetMessageByID(id)
+	return u.messageRepo.GetMessageByID(id)
 }
-
 
 func (u *messageUsecase) GetMessageByID(id string) (*entity.Message, error) {
 	return u.messageRepo.GetMessageByID(id)
 }
 
-func (u *messageUsecase)  SendMessage(message *entity.Message) error {
+func (u *messageUsecase) SendMessage(message *entity.Message) error {
 	if message.SenderID == "" {
 		return errors.New("user id is required")
 	}
@@ -51,8 +53,6 @@ func (u *messageUsecase)  SendMessage(message *entity.Message) error {
 func (u *messageUsecase) UnSentMessage(message *entity.Message) error {
 	return u.UnSentMessage(message)
 }
-
-
 
 func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message, error) {
 	err := u.messageRepo.UpdateMessage(message)

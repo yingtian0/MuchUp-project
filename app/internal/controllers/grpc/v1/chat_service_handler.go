@@ -3,10 +3,10 @@ package v1
 import (
 	"context"
 
-	"MuchUp/backend/internal/domain/entity"
-	"MuchUp/backend/internal/domain/usecase"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/usecase"
 
-	chatv1 "MuchUp/backend/proto/gen/go/chat/v1"
+	chatv1 "MuchUp/app/proto/gen/go/chat/v1"
 )
 
 func (h *GrpcHandler) GetMessages(ctx context.Context, req *chatv1.GetMessagesRequest) (*chatv1.GetMessagesResponse, error) {

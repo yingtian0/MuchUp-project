@@ -1,4 +1,4 @@
-module MuchUp/backend
+module MuchUp/app
 
 go 1.23.2
 

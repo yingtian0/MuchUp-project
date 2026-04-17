@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"MuchUp/backend/internal/domain/entity"
-	mock_usecase "MuchUp/backend/internal/domain/usecase/mocks"
-	logger "MuchUp/backend/pkg/logger"
-	"MuchUp/backend/utils"
+	"MuchUp/app/internal/domain/entity"
+	mock_usecase "MuchUp/app/internal/domain/usecase/mocks"
+	logger "MuchUp/app/pkg/logger"
+	"MuchUp/app/utils"
 	"encoding/json"
 
 	"io"
