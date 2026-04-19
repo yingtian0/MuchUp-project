@@ -10,9 +10,7 @@ import (
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
 	"MuchUp/app/pkg/logger"
-	"log"
 
-	"MuchUp/app/internal/infrastructure/auth"
 	"MuchUp/app/internal/infrastructure/server"
 )
 
@@ -32,7 +30,6 @@ func main() {
 
 	database.InitDB(db)
 	appLogger.Info("Database migration completed")
-	JWTValidator := auth.NewJWTValidator(config.SecretKey, "Much-Up", "users")
 	userRepo := repositories.NewUserRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
 	groupRepo := repositories.NewChatGroupRepository(db)
@@ -43,8 +40,7 @@ func main() {
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)
 
-	log.Println("start serve")
 	go server.StartGRPCServer(config, appLogger, grpcHandler)
-	go server.StartHTTPServer(config, appLogger, RestHandler.SetupRoutes(JWTValidator))
+	server.StartHTTPServer(config, appLogger, RestHandler.SetupRoutes())
 
 }
