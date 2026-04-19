@@ -10,6 +10,7 @@ import (
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
 	"MuchUp/app/pkg/logger"
+	"MuchUp/app/pkg/middleware"
 
 	"MuchUp/app/internal/infrastructure/server"
 )
@@ -22,13 +23,19 @@ import (
 func main() {
 	config := config.LoadConfig()
 	appLogger := logger.NewLogger()
+	appLogger.Info("loading conifg")
+	appLogger.Infof("config loaded http_port=%s grpc_port=%s db_host=%s db_name=%s", config.HTTPPort, config.GRPCPort, config.DBHost, config.DBName)
 
+	appLogger.Info("database connecting")
 	db, err := database.Connect(config)
 	if err != nil {
 		appLogger.Fatal("Failed to connect to database", err)
 	}
-
-	database.InitDB(db)
+	appLogger.Info("database connected")
+	appLogger.Info("running database migration")
+	if err = database.InitDB(db); err != nil {
+		appLogger.WithError(err).Fatal("database migration failed")
+	}
 	appLogger.Info("Database migration completed")
 	userRepo := repositories.NewUserRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
@@ -40,7 +47,9 @@ func main() {
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)
 
+	HTTPRouter := RestHandler.SetupRouter()
+	HTTPRouter.Use(middleware.RequestMetrics(appLogger))
 	go server.StartGRPCServer(config, appLogger, grpcHandler)
-	server.StartHTTPServer(config, appLogger, RestHandler.SetupRoutes())
+	server.StartHTTPServer(config, appLogger, HTTPRouter)
 
 }
