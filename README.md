@@ -19,7 +19,7 @@ MuchUp は、**5 人をランダムでマッチング**し、
 ```text
                ┌──────────────┐
                │   Frontend   │
-               │ (Web / SPA)  │
+               │ Web  │
                └─────┬────────┘
                      │ REST / WebSocket
                      ▼
@@ -28,6 +28,7 @@ MuchUp は、**5 人をランダムでマッチング**し、
             │  - Auth / Session   │
             │  - Rate Limit       │
             │  - HTTP → WebSocket │
+            │  - HTTP → gRPC │
             │  - TLS Termination  │
             └─────┬───────────────┘
                   │ gRPC / WebSocket
