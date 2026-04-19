@@ -8,6 +8,7 @@ import (
 
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
 	"github.com/gorilla/websocket"
@@ -39,6 +40,7 @@ type ChatHandler struct {
 	Hub            *Hub
 	MessageUsecase usecase.MessageUsecase
 	UserUsecase    usecase.UserUsecase
+	Logger         logger.Logger
 }
 
 type WebSocketMessage struct {
@@ -225,7 +227,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 	}
 	user, err := ch.UserUsecase.GetUserByID(client.UserID)
 	if err != nil {
-		log.Printf("Failed to get user: %v", err)
+		logger.NewLogger().WithError(err)
 		return
 	}
 	var text string

@@ -6,9 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&entity.User{})
-	db.AutoMigrate(&entity.ChatGroup{})
-	db.AutoMigrate(&entity.Message{})
-	return db
+func InitDB(db *gorm.DB) error {
+	err := db.AutoMigrate(&entity.User{}, &entity.ChatGroup{}, &entity.Message{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
