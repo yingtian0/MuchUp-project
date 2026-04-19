@@ -7,7 +7,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o server app/cmd/main.go
-EXPOSE 8080
+RUN go build -o server ./cmd/main.go
 EXPOSE 9000
-CMD ["app/cmd/main"]
+CMD ["./server"]
