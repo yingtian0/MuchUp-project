@@ -78,5 +78,6 @@ func NewHandler(
 
 func (h *Handler) SetupRouter() *mux.Router {
 	r := mux.NewRouter()
+
 	return r
 }

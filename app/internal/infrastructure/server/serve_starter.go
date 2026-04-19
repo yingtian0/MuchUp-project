@@ -13,6 +13,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
+	health "google.golang.org/grpc/health"
+	grpc_health_v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func StartGRPCServer(cfg *config.Config, appLogger logger.Logger, grpcHandler *grpc_controller.GrpcHandler) {
@@ -24,6 +26,12 @@ func StartGRPCServer(cfg *config.Config, appLogger logger.Logger, grpcHandler *g
 	s := grpc.NewServer()
 	authv1.RegisterAuthServiceServer(s, grpcHandler)
 	chatv1.RegisterChatServiceServer(s, grpcHandler)
+
+	healthServer := health.NewServer()
+	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus(authv1.AuthService_ServiceDesc.ServiceName, grpc_health_v1.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus(chatv1.ChatService_ServiceDesc.ServiceName, grpc_health_v1.HealthCheckResponse_SERVING)
+	grpc_health_v1.RegisterHealthServer(s, healthServer)
 
 	appLogger.Info("gRPC server listening at " + lis.Addr().String())
 	if err := s.Serve(lis); err != nil {
