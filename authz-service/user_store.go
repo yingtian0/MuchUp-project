@@ -35,7 +35,7 @@ func (s *UserStore) Create(username, email, password string) (User, error) {
 		return User{}, ErrUserExists
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return User{}, err
 	}
@@ -44,7 +44,7 @@ func (s *UserStore) Create(username, email, password string) (User, error) {
 		ID:           uuid.NewString(),
 		Username:     username,
 		Email:        email,
-		PasswordHash: hash,
+		PasswordHash: passwordHash,
 	}
 
 	s.byMail[email] = user
