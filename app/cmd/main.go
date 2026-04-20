@@ -2,13 +2,13 @@ package main
 
 import (
 	"MuchUp/app/config"
-	group_service "MuchUp/app/internal/application/service/group"
-	message_service "MuchUp/app/internal/application/service/message"
-	user_service "MuchUp/app/internal/application/service/user"
 	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
+	group_service "MuchUp/app/internal/service/group"
+	message_service "MuchUp/app/internal/service/message"
+	user_service "MuchUp/app/internal/service/user"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
