@@ -1,61 +1,66 @@
-package entity 
+package entity
+
 import (
-	"time"
 	"errors"
+	"time"
+
 	"gorm.io/gorm"
 )
+
 type PrimaryAuthMethod string
+
 const (
 	AuthMethodEmail PrimaryAuthMethod = "email"
 	AuthMethodPhone PrimaryAuthMethod = "phone"
 )
+
 type User struct {
-	ID string
-	Email *string
-	PhoneNumber *string
-	NickName string
-	PasswordHash string
-	PersonalityProfile map[string]interface{}
-	AvatarURL *string
-	UsagePurpose string
-	IsActive bool
-	EmailVerified bool
-	PhoneVerified bool
-	AuthMethod PrimaryAuthMethod 
+	ID             string
+	Email          *string
+	PhoneNumber    *string
+	NickName       string
+	PasswordHash   string
+	AvatarURL      *string
+	UsagePurpose   string
+	IsActive       bool
+	EmailVerified  bool
+	PhoneVerified  bool
+	AuthMethod     PrimaryAuthMethod
 	IsBlockedUsers map[string]bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `json:"deletedAt" swaggertype:"primitive,string" format:"date-time"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeletedAt      gorm.DeletedAt `json:"deletedAt" swaggertype:"primitive,string" format:"date-time"`
 }
-func NewUser(userid,name string,authMethod PrimaryAuthMethod,email,phone string) (*User,error) {
+
+func NewUser(userid, name string, authMethod PrimaryAuthMethod, email, phone string) (*User, error) {
 	if userid == "" || name == "" || authMethod == "" {
-		return nil,errors.New("user_id,name,authMethod is required")
+		return nil, errors.New("user_id,name,authMethod is required")
 	}
-	user := &User {
-		ID:userid,
-		NickName:name,
-		AuthMethod:authMethod,
-		CreatedAt:time.Now(),
-		UpdatedAt:time.Now(),
+	user := &User{
+		ID:         userid,
+		NickName:   name,
+		AuthMethod: authMethod,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 	if authMethod == AuthMethodEmail {
 		if email == "" {
-			return nil,errors.New("email is required")
+			return nil, errors.New("email is required")
 		}
 		user.Email = &email
 		user.EmailVerified = true
 	}
 	if authMethod == AuthMethodPhone {
 		if phone == "" {
-			return nil ,errors.New("phone is required")
+			return nil, errors.New("phone is required")
 		}
 		user.PhoneNumber = &phone
 		user.PhoneVerified = true
 	}
-	return user,nil
+	return user, nil
 }
 func (u *User) CanSendMessage(targetUserID string) bool {
-    isBlockedUsers := u.IsBlockedUsers[targetUserID]
+	isBlockedUsers := u.IsBlockedUsers[targetUserID]
 	return !(u.IsActive && isBlockedUsers)
 }
 func (u *User) BlockUser(targetUserID string) error {
@@ -79,6 +84,6 @@ func (u *User) UnblockUser(targetUserID string) error {
 	if u.IsBlockedUsers[targetUserID] == false {
 		return errors.New("this user is not blocked")
 	}
-	delete(u.IsBlockedUsers,targetUserID)
+	delete(u.IsBlockedUsers, targetUserID)
 	return nil
- }
+}
