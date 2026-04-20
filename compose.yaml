@@ -1,24 +1,37 @@
-  services:
-    db:
-      image: postgres:16
-      container_name: muchup-db
-      restart: unless-stopped
-      environment:
-        POSTGRES_USER: ${DB_USER}
-        POSTGRES_PASSWORD: ${DB_PASSWORD}
-      ports:
-        - "${DB_PORT}:5432"
-    
-    app:
-      build: ./app
-      environment:
-        DB_HOST: db
-        DB_USER: ${DB_USER}
-        DB_PASSWORD:  ${DB_PASSWORD}
-        RUN_DB_MIGRATION: ${RUN_DB_MIGRATION}
-        DB_NAME: ${DB_NAME}
-        DB_PORT: 5432
-        SERVER_PORT: 8080
-        GRPC_PORT: 9000
-  volumes:
-    postgres_data:
+services:
+  app:
+    build: ./app
+    environment:
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RUN_DB_MIGRATION: ${RUN_DB_MIGRATION}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      SERVER_PORT: 8080
+      GRPC_PORT: 9000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    container_name: muchup-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
