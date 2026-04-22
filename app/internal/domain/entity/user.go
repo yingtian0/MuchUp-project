@@ -23,6 +23,7 @@ type User struct {
 	AvatarURL      *string
 	UsagePurpose   string
 	IsActive       bool
+	IsBanned       bool
 	EmailVerified  bool
 	PhoneVerified  bool
 	AuthMethod     PrimaryAuthMethod
