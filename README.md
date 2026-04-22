@@ -32,27 +32,26 @@ MuchUp は、**5 人をランダムでマッチング**し、
             │  - TLS Termination  │
             └─────┬───────────────┘
                   │ gRPC / WebSocket
-      ┌───────────┴───────────┐
-      ▼                       ▼
+      ┌───────────┴─
+      ▼                       
 
-┌──────┐ ┌───────┐
-│ API Service │ │ AI Service │
-│ - Business │ │ - AI / ML │
-│ - WebSocket │ │ - gRPC / WS │
-│ - Redis Pub/Sub / List │
-└──────┘ └─────┘
+┌───────────────┐　      ┌─────────────┐
+│ API Service   │        │ AI Service  │
+│ - Business    │  gRPC  │ - AI / ML   │
+│ - WebSocket   │─────▶  │ - gRPC / WS │
+│ - Redis client│        │             │
+└──────────────          └─────────────┘
 │
 ▼
 ┌───────────────┐
-│ Redis │
-│ Cluster / │
-│ Streams / Pub │
+│ Redis         │
+│  hash         │
+│ Streams       │
 └───────────────┘
 │
 ▼
 ┌───────────────┐
-│ Persistent DB │
-│ (Backup / Arch) │
+│  DB           │
 └───────────────┘
 ```
 
