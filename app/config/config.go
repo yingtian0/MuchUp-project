@@ -13,6 +13,7 @@ type Config struct {
 	HTTPPort  string
 	WSPort    string
 	RedisAddr string
+	LLMAddr   string
 }
 
 func LoadConfig() *Config {
@@ -26,6 +27,7 @@ func LoadConfig() *Config {
 		GRPCPort:  getEnv("GRPC_PORT", "9000"),
 		HTTPPort:  getEnv("SERVER_PORT", "8080"),
 		RedisAddr: getEnv("REDIS_ADDR", "localhost:6379"),
+		LLMAddr:   getEnv("LLM_GRPC_ADDR", "localhost:50052"),
 	}
 }
 
@@ -34,6 +36,13 @@ func (c *Config) GetRedisAddr() string {
 		return "localhost:6379"
 	}
 	return c.RedisAddr
+}
+
+func (c *Config) GetLLMAddr() string {
+	if c.LLMAddr == "" {
+		return "localhost:50052"
+	}
+	return c.LLMAddr
 }
 
 func getEnv(key, fallback string) string {

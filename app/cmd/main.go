@@ -6,6 +6,7 @@ import (
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
+	llmhandler "MuchUp/app/internal/infrastructure/llm"
 	redisstore "MuchUp/app/internal/infrastructure/redis"
 	group_service "MuchUp/app/internal/usecase/group"
 	message_service "MuchUp/app/internal/usecase/message"
@@ -16,6 +17,8 @@ import (
 	"MuchUp/app/internal/infrastructure/server"
 
 	goredis "github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @Title MuchUp API
@@ -47,7 +50,13 @@ func main() {
 		Addr: config.GetRedisAddr(),
 	})
 	messageStreamStore := redisstore.NewMessageStreamStore(redisClient, 1000)
-	groupUsecase := group_service.NewGroupUsecase(groupRepo, appLogger)
+	llmConn, err := grpc.NewClient(config.GetLLMAddr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		appLogger.Fatal("Failed to connect to llm service", err)
+	}
+	defer llmConn.Close()
+	llmHandler := llmhandler.NewHandler(llmConn, messageStreamStore)
+	groupUsecase := group_service.NewGroupUsecase(groupRepo, llmHandler, appLogger)
 	userUsecase := user_service.NewUserUsecase(userRepo, groupRepo, groupUsecase)
 	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)

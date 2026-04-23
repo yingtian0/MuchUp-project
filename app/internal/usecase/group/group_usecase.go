@@ -5,16 +5,23 @@ import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
 	"MuchUp/app/pkg/logger"
+	"context"
 )
 
 type groupUsecase struct {
 	groupRepo repository.ChatGroupRepository
+	llm       usecase.LLMHandler
 	logger    logger.Logger
 }
 
-func NewGroupUsecase(groupRepo repository.ChatGroupRepository, logger logger.Logger) usecase.GroupUsecase {
+func NewGroupUsecase(
+	groupRepo repository.ChatGroupRepository,
+	llm usecase.LLMHandler,
+	logger logger.Logger,
+) usecase.GroupUsecase {
 	return &groupUsecase{
 		groupRepo: groupRepo,
+		llm:       llm,
 		logger:    logger,
 	}
 }
@@ -27,6 +34,9 @@ func (u *groupUsecase) FindOrCreateGroupForUser(user *entity.User) (*entity.Chat
 		if err != nil {
 			u.logger.WithError(err).Error("Failed to create a new group")
 			return nil, err
+		}
+		if err := u.PublishRoomCreated(context.Background(), createdGroup, user); err != nil {
+			u.logger.WithError(err).WithField("group_id", createdGroup.ID).Warn("Failed to publish room created event to llm service")
 		}
 		return createdGroup, nil
 	}
@@ -43,4 +53,11 @@ func (u *groupUsecase) FindOrCreateGroupForUser(user *entity.User) (*entity.Chat
 }
 func (u *groupUsecase) AddUserToGroup(userID, groupID string) error {
 	return u.groupRepo.AddUserToGroup(userID, groupID)
+}
+
+func (u *groupUsecase) PublishRoomCreated(ctx context.Context, group *entity.ChatGroup, owner *entity.User) error {
+	if u.llm == nil {
+		return nil
+	}
+	return u.llm.HandleRoomCreated(ctx, group, owner)
 }
