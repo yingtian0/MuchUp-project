@@ -1,102 +1,159 @@
-package state_kvs
+package redis
 
 import (
-	"bytes"
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
 	"context"
-	"encoding/json"
-	"errors"
-	"log"
-	"net"
-	"sync"
+	"fmt"
+	"strconv"
+	"time"
 
-	hc "github.com/Code-Hex/go-generics-cache"
-	"github.com/redis/go-redis/v9"
+	goredis "github.com/redis/go-redis/v9"
 )
 
-type Cache[T any] interface {
-	Get(ctx context.Context, key string) (*T, error)
-	Set(ctx context.Context, key string, val T) error
-	Del(ctx context.Context, key string) error
+type MessageStreamStore struct {
+	client goredis.Cmdable
+	maxLen int64
 }
 
-type InMemory[T any] struct {
-	client *redis.Client
-	local  *hc.Cache[string, T]
-	mu     sync.Mutex
-	rmu    sync.RWMutex
-}
+var _ repository.MessageStreamStore = (*MessageStreamStore)(nil)
 
-var ErrNotFound = errors.New("Not Found")
-
-var _ Cache[any] = (*InMemory[any])(nil)
-
-func MewInMemory[T any](clinet *redis.Client) *InMemory[T] {
-	return &InMemory[T]{
-		client: clinet,
-		local:  hc.New[string, T](),
-		mu:     sync.Mutex{},
-		rmu:    sync.RWMutex{},
+func NewMessageStreamStore(client goredis.Cmdable, maxLen int64) *MessageStreamStore {
+	return &MessageStreamStore{
+		client: client,
+		maxLen: maxLen,
 	}
 }
 
-func (m *InMemory[T]) Get(ctx context.Context, key string) (*T, error) {
-	var val T
-	m.rmu.RLock()
-	defer m.rmu.Unlock()
-
-	if v, ok := m.local.Get(key); !ok {
-		log.Println("local cache miss")
-	} else {
-		return &v, nil
+func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.Message) (string, error) {
+	args := &goredis.XAddArgs{
+		Stream: streamKey(message.GroupID),
+		Values: map[string]any{
+			"message_id": message.MessageID,
+			"sender_id":  message.SenderID,
+			"group_id":   message.GroupID,
+			"text":       derefString(message.Text),
+			"image":      derefString(message.Image),
+			"created_at": strconv.FormatInt(message.CreatedAt.UnixMilli(), 10),
+			"updated_at": strconv.FormatInt(message.UpdatedAt.UnixMilli(), 10),
+		},
 	}
+	if s.maxLen > 0 {
+		args.MaxLen = s.maxLen
+		args.Approx = true
+	}
+	return s.client.XAdd(ctx, args).Result()
+}
 
-	v, err := m.client.Get(ctx, key).Result()
+func (s *MessageStreamStore) GetRecentMessages(ctx context.Context, roomID string, count int64) ([]*entity.Message, error) {
+	streams, err := s.client.XRevRangeN(ctx, streamKey(roomID), "+", "-", count).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			return nil, ErrNotFound
-		}
 		return nil, err
 	}
 
-	if err := json.NewDecoder(bytes.NewBufferString(v)).Decode(val); err != nil {
+	messages := make([]*entity.Message, 0, len(streams))
+	for i := len(streams) - 1; i >= 0; i-- {
+		message, err := streamMessageToEntity(streams[i])
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+	return messages, nil
+}
+
+func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastMessageID string, count int64) ([]*entity.Message, error) {
+	start := "-"
+	if lastMessageID != "" {
+		start = "(" + lastMessageID
+	}
+
+	streams, err := s.client.XRangeN(ctx, streamKey(roomID), start, "+", count).Result()
+	if err != nil {
 		return nil, err
 	}
-	m.local.Set(key, val)
-	return &val, nil
-}
 
-func (m *InMemory[T]) Set(ctx context.Context, key string, val T) error {
-	buf := bytes.NewBuffer(nil)
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	if err := json.NewEncoder(buf).Encode(val); err != nil {
-		return err
-	}
-	if _, err := m.client.XAdd(ctx, key, buf.String(), 0).Result(); err != nil {
-		if _, ok := err.(net.Error); ok {
-			log.Println("Failed to cache %s, continuing without cache", key)
-
+	messages := make([]*entity.Message, 0, len(streams))
+	for _, stream := range streams {
+		message, err := streamMessageToEntity(stream)
+		if err != nil {
+			return nil, err
 		}
-		return err
+		messages = append(messages, message)
 	}
-	return nil
-
+	return messages, nil
 }
 
-func (m *InMemory[T]) Del(ctx context.Context, key string) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (s *MessageStreamStore) DeleteMessageHistory(ctx context.Context, roomID string) error {
+	return s.client.Del(ctx, streamKey(roomID)).Err()
+}
 
-	if _, ok := m.local.Get(key); !ok {
-		log.Println("local cache miss")
-	} else {
-		m.local.Delete(key)
+func streamMessageToEntity(stream goredis.XMessage) (*entity.Message, error) {
+	createdAt, err := parseUnixMilli(stream.Values["created_at"])
+	if err != nil {
+		return nil, err
+	}
+	updatedAt, err := parseUnixMilli(stream.Values["updated_at"])
+	if err != nil {
+		return nil, err
 	}
 
-	if _, err := m.client.Del(ctx).Result(); err != nil {
-		return err
+	message := &entity.Message{
+		MessageID: toString(stream.Values["message_id"]),
+		SenderID:  toString(stream.Values["sender_id"]),
+		GroupID:   toString(stream.Values["group_id"]),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
-	return nil
 
+	if text := toString(stream.Values["text"]); text != "" {
+		message.Text = &text
+	}
+	if image := toString(stream.Values["image"]); image != "" {
+		message.Image = &image
+	}
+	if video := toString(stream.Values["video"]); video != "" {
+		message.Video = &video
+	}
+	if sticker := toString(stream.Values["sticker"]); sticker != "" {
+		message.Sticker = &sticker
+	}
+
+	return message, nil
+}
+
+func parseUnixMilli(value any) (time.Time, error) {
+	if value == nil || toString(value) == "" {
+		return time.Time{}, nil
+	}
+
+	unixMilli, err := strconv.ParseInt(toString(value), 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.UnixMilli(unixMilli), nil
+}
+
+func derefString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func toString(value any) string {
+	switch typed := value.(type) {
+	case nil:
+		return ""
+	case string:
+		return typed
+	case []byte:
+		return string(typed)
+	default:
+		return fmt.Sprint(typed)
+	}
+}
+
+func streamKey(roomID string) string {
+	return "room:" + roomID + ":messages"
 }
