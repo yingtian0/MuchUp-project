@@ -2,4 +2,45 @@ syntax = "proto3";
 
 package llm.v1;
 
-import "google/api/annotations.proto";
+option go_package = "github.com/MuchUp-monorepo/gen/go/llm/v1;llmv1";
+
+service LLMService {
+  rpc GenerateReply(GenerateReplyRequest) returns (GenerateReplyResponse);
+}
+
+message ContextMessage {
+  string message_id = 1;
+  string room_id = 2;
+  string user_id = 3;
+  string role = 4;
+  string content = 5;
+  int64 created_at = 6;
+}
+
+message GenerateReplyRequest {
+  string room_id = 1;
+  string session_id = 2;
+  string target_user_id = 3;
+  string system_prompt = 4;
+  repeated ContextMessage messages = 5;
+  string model = 6;
+  float temperature = 7;
+  int32 max_tokens = 8;
+  map<string, string> metadata = 9;
+}
+
+message TokenUsage {
+  int32 prompt_tokens = 1;
+  int32 completion_tokens = 2;
+  int32 total_tokens = 3;
+}
+
+message GenerateReplyResponse {
+  string reply_id = 1;
+  string room_id = 2;
+  string model = 3;
+  string content = 4;
+  string finish_reason = 5;
+  int64 created_at = 6;
+  TokenUsage usage = 7;
+}

@@ -4,14 +4,18 @@ GOOGLEAPIS := third_party/googleapis
 DESCRIPTOR_OUT := api-gateway/envoy/proto/api.pb
 BUF := ./.tools/bin/buf
 BUF_CACHE_DIR ?= /tmp/buf-cache
+BUF_LLM_TEMPLATE := buf.gen.llm.yaml
 
 PROTO_FILES := \
 	$(PROTO_DIR)/chat/v1/chat.proto \
-	$(PROTO_DIR)/auth/v1/auth.proto
+	$(PROTO_DIR)/auth/v1/auth.proto \
+	$(PROTO_DIR)/llm/v1/llm.proto
+
+LLM_PROTO_FILE := $(PROTO_DIR)/llm/v1/llm.proto
 
 PROTO_FILE ?=
 
-.PHONY: proto gen gen-file descriptor lint breaking clean
+.PHONY: proto gen gen-file gen-llm descriptor lint breaking clean
 
 proto: gen descriptor
 
@@ -21,6 +25,9 @@ gen:
 gen-file:
 	test -n "$(PROTO_FILE)"
 	BUF_CACHE_DIR=$(BUF_CACHE_DIR) $(BUF) generate "$(PROTO_FILE)"
+
+gen-llm:
+	BUF_CACHE_DIR=$(BUF_CACHE_DIR) $(BUF) generate "$(LLM_PROTO_FILE)" --template $(BUF_LLM_TEMPLATE)
 
 descriptor:
 	mkdir -p $(dir $(DESCRIPTOR_OUT))
