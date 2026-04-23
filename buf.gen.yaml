@@ -1,11 +1,21 @@
-version: v1
+version: v2
 plugins:
-  - plugin: go
+  - local: protoc-gen-go
     out: gen/go
     opt:
       - paths=source_relative
 
-  - plugin: go-grpc
+  - local: protoc-gen-go
+    out: app/proto/gen/go
+    opt:
+      - paths=source_relative
+
+  - local: protoc-gen-go-grpc
     out: gen/go
+    opt:
+      - paths=source_relative
+
+  - local: protoc-gen-go-grpc
+    out: app/proto/gen/go
     opt:
       - paths=source_relative
