@@ -6,6 +6,7 @@ import (
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
+	redisstore "MuchUp/app/internal/infrastructure/redis"
 	group_service "MuchUp/app/internal/usecase/group"
 	message_service "MuchUp/app/internal/usecase/message"
 	user_service "MuchUp/app/internal/usecase/user"
@@ -13,6 +14,8 @@ import (
 	"MuchUp/app/pkg/middleware"
 
 	"MuchUp/app/internal/infrastructure/server"
+
+	goredis "github.com/redis/go-redis/v9"
 )
 
 // @Title MuchUp API
@@ -40,9 +43,13 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
 	groupRepo := repositories.NewChatGroupRepository(db)
+	redisClient := goredis.NewClient(&goredis.Options{
+		Addr: config.GetRedisAddr(),
+	})
+	messageStreamStore := redisstore.NewMessageStreamStore(redisClient, 1000)
 	groupUsecase := group_service.NewGroupUsecase(groupRepo, appLogger)
-	userUsecase := user_service.NewUserUsecase(userRepo, groupUsecase)
-	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo)
+	userUsecase := user_service.NewUserUsecase(userRepo, groupRepo, groupUsecase)
+	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)

@@ -1,9 +1,9 @@
 package repositories
 
 import (
+	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-	"MuchUp/app/internal/domain/usecase"
 	"MuchUp/app/internal/infrastructure/database/mapper"
 	"MuchUp/app/internal/infrastructure/database/schema"
 	"errors"

@@ -1,6 +1,9 @@
 package repository
 
-import "MuchUp/app/internal/domain/entity"
+import (
+	"MuchUp/app/internal/domain/entity"
+	"context"
+)
 
 type UserRepository interface {
 	CreateUser(user *entity.User) error
@@ -25,4 +28,20 @@ type ChatGroupRepository interface {
 	GetGroupByUserID(userID string) ([]*entity.ChatGroup, error)
 	AddUserToGroup(userID, groupID string) error
 	FindGroupWithAvailableSlots() (*entity.ChatGroup, error)
+}
+
+type RoomUserStore interface {
+	AddConnectedUser(ctx context.Context, roomID, userID string) error
+	RemoveConnectedUser(ctx context.Context, roomID, userID string) error
+	ListConnectedUserIDs(ctx context.Context, roomID string) ([]string, error)
+	IsConnectedUser(ctx context.Context, roomID, userID string) (bool, error)
+	CountConnectedUsers(ctx context.Context, roomID string) (int64, error)
+	DeleteRoomConnections(ctx context.Context, roomID string) error
+}
+
+type MessageStreamStore interface {
+	AppendMessage(ctx context.Context, message *entity.Message) (string, error)
+	GetRecentMessages(ctx context.Context, roomID string, count int64) ([]*entity.Message, error)
+	GetMessagesAfter(ctx context.Context, roomID, lastMessageID string, count int64) ([]*entity.Message, error)
+	DeleteMessageHistory(ctx context.Context, roomID string) error
 }

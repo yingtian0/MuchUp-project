@@ -19,11 +19,7 @@ func NewMessageUsecase(messageRepo repository.MessageRepository, userRepo reposi
 		userRepo:    userRepo,
 	}
 }
-func (u *messageUsecase) SendMessage(message dto.SendChatMessageInput) (*entity.Message, error) {
-	err := u.messageRepo.CreateMessage(message)
-	if err != nil {
-		return nil, err
-	}
+func (u *messageUsecase) SendMessage(message dto.SendChatMessageInput) error {
 	return message, nil
 }
 
@@ -52,11 +48,8 @@ func (u *messageUsecase) SendMessage(message *entity.Message) error {
 
 func (u *messageUsecase) UnSentMessage(message *entity.Message) error {
 	return u.UnSentMessage(message)
-
-
-func (u *messageUsecase) DeleteMessage(id string) error {
-	return u.messageRepo.DeleteMessage(id)
 }
+
 func (u *messageUsecase) GetMessagesByGroup(groupID string, limit, offset int) ([]*entity.Message, error) {
 	return nil, nil
 }

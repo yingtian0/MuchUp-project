@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package llm.v1;
+
+import "google/api/annotations.proto";

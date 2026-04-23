@@ -20,6 +20,7 @@ func ToUserSchema(user *entity.User) *schema.UserSchema {
 		AvatarURL:         user.AvatarURL,
 		UsagePurpose:      user.UsagePurpose,
 		IsActive:          user.IsActive,
+		IsBanned:          user.IsBanned,
 		CreatedAt:         user.CreatedAt,
 		UpdatedAt:         user.UpdatedAt,
 	}
@@ -38,6 +39,7 @@ func ToUserEntity(userSchema *schema.UserSchema) *entity.User {
 		AvatarURL:     userSchema.AvatarURL,
 		UsagePurpose:  userSchema.UsagePurpose,
 		IsActive:      userSchema.IsActive,
+		IsBanned:      userSchema.IsBanned,
 		EmailVerified: userSchema.EmailVerified,
 		PhoneVerified: userSchema.PhoneVerified,
 		AuthMethod:    entity.PrimaryAuthMethod(userSchema.PrimaryAuthMethod),

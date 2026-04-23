@@ -1,13 +1,16 @@
 package ws
 
 import (
+	"MuchUp/app/internal/usecase/dto"
+	"MuchUp/app/utils"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"MuchUp/app/internal/controllers/usecase"
-	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
@@ -275,24 +278,33 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 	// フロントから渡された値を取り出す
 	content, _ := data["content"].(string)
 	recipientId, _ := data["recipientId"].(string)
-	groupId, _ := data["groupId"].(string)
+	roomID, _ := data["room_id"].(string)
+	if roomID == "" {
+		roomID, _ = data["roomId"].(string)
+	}
+	if roomID == "" {
+		roomID, _ = data["groupId"].(string)
+	}
+	if roomID == "" {
+		roomID = client.RoomID
+	}
 
 	// ここでは wsMessage.Type を messageType に入れている
 	// ただし呼び出し元 switch は "chat_message" しか来ないため、
 	// 後続の "direct"/"group" 判定とは整合していない
 	messageType := wsMessage.Type
 
-	// ドメインメッセージ生成
-	message, err := entity.NewMessage(client.UserID, groupId, content)
-	if err != nil {
-		log.Printf("Failed to create message entity: %v", err)
-		return
+	input := dto.SendChatMessageInput{
+		EventType: dto.MessageEvent,
+		SenderID:  client.UserID,
+		RoomID:    roomID,
+		MessageID: utils.GenerateUUID(),
+		Content:   content,
+		CreatedAt: time.Now(),
 	}
 
-	// 永続化
-	savedMessage, err := ch.MessageUsecase.CreateMessage(message)
-	if err != nil {
-		log.Printf("Failed to save message: %v", err)
+	if err := ch.MessageUsecase.SendChatMessage(context.Background(), input); err != nil {
+		log.Printf("Failed to publish message: %v", err)
 		return
 	}
 
@@ -303,20 +315,14 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		return
 	}
 
-	// Text がポインタなので nil チェック
-	var text string
-	if savedMessage.Text != nil {
-		text = *savedMessage.Text
-	}
-
 	// フロントへ返す整形済みメッセージ
 	chatMessage := ChatMessage{
-		ID:        savedMessage.MessageID,
-		Content:   text,
-		UserID:    savedMessage.SenderID,
-		RoomID:    savedMessage.RoomID,
+		ID:        input.MessageID,
+		Content:   input.Content,
+		UserID:    input.SenderID,
+		RoomID:    input.RoomID,
 		Username:  user.NickName,
-		Timestamp: savedMessage.CreatedAt.Unix(),
+		Timestamp: input.CreatedAt.Unix(),
 	}
 
 	response := WebSocketMessage{
@@ -331,8 +337,8 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		// この条件には入らない可能性が高い
 		if messageType == "direct" && recipientId != "" {
 			ch.Hub.SendToUser(responseData, recipientId)
-		} else if messageType == "group" && groupId != "" {
-			ch.Hub.BroadcastToGroup(responseData, groupId)
+		} else if roomID != "" {
+			ch.Hub.BroadcastToGroup(responseData, roomID)
 		}
 	}
 }
@@ -370,7 +376,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 	}
 
 	if responseData, err := json.Marshal(response); err == nil {
-		ch.Hub.BroadcastToGroup(responseData, client.GroupID)
+		ch.Hub.BroadcastToGroup(responseData, client.RoomID)
 	}
 }
 
@@ -387,33 +393,48 @@ func (ch *ChatHandler) HandleJoinGroup(client *Client, wsMessage WebSocketMessag
 		return
 	}
 
+	if err := ch.UserUsecase.JoinGroup(client.UserID, newGroupID); err != nil {
+		response := WebSocketMessage{
+			Type: "join_group_error",
+			Data: map[string]string{
+				"user_id":  client.UserID,
+				"group_id": newGroupID,
+				"error":    err.Error(),
+			},
+		}
+		if responseData, marshalErr := json.Marshal(response); marshalErr == nil {
+			client.Send <- responseData
+		}
+		return
+	}
+
 	// すでに別グループへ所属していれば退出通知
-	if client.GroupID != "" {
+	if client.RoomID != "" {
 		leaveMessage := WebSocketMessage{
 			Type: "user_left",
 			Data: map[string]string{
 				"user_id":  client.UserID,
-				"group_id": client.GroupID,
+				"group_id": client.RoomID,
 			},
 		}
 		if data, err := json.Marshal(leaveMessage); err == nil {
-			ch.Hub.BroadcastToGroup(data, client.GroupID)
+			ch.Hub.BroadcastToGroup(data, client.RoomID)
 		}
 	}
 
 	// 所属グループを更新
-	client.GroupID = newGroupID
+	client.RoomID = newGroupID
 
 	// 新グループへ参加通知
 	joinMessage := WebSocketMessage{
 		Type: "user_joined",
 		Data: map[string]string{
 			"user_id":  client.UserID,
-			"group_id": client.GroupID,
+			"group_id": client.RoomID,
 		},
 	}
 	if data, err := json.Marshal(joinMessage); err == nil {
-		ch.Hub.BroadcastToGroup(data, client.GroupID)
+		ch.Hub.BroadcastToGroup(data, client.RoomID)
 	}
 
 	// 新規グループ作成時に AI エージェントの自己紹介メッセージを送信

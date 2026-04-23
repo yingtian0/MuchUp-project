@@ -1,9 +1,9 @@
 package user
 
 import (
+	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-	"MuchUp/app/internal/domain/usecase"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,10 +15,15 @@ type userUsecase struct {
 	groupUc   usecase.GroupUsecase
 }
 
-func NewUserUsecase(userRepo repository.UserRepository, groupUc usecase.GroupUsecase) usecase.UserUsecase {
+func NewUserUsecase(
+	userRepo repository.UserRepository,
+	groupRepo repository.ChatGroupRepository,
+	groupUc usecase.GroupUsecase,
+) usecase.UserUsecase {
 	return &userUsecase{
-		userRepo: userRepo,
-		groupUc:  groupUc,
+		userRepo:  userRepo,
+		groupRepo: groupRepo,
+		groupUc:   groupUc,
 	}
 }
 func (u *userUsecase) CreateUser(user *entity.User) (*entity.User, error) {
@@ -65,11 +70,30 @@ func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.User, error) {
 	return nil, errors.New("not implemented")
 }
 func (u *userUsecase) JoinGroup(userID, groupID string) error {
-	return errors.New("not implemented")
+	user, err := u.userRepo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+	if user.IsBanned {
+		return errors.New("banned user cannot join room")
+	}
+
+	group, err := u.groupRepo.GetGroupByID(groupID)
+	if err != nil {
+		return err
+	}
+	if group.IsMember(userID) {
+		return nil
+	}
+	if !group.CanAddMemnber() {
+		return errors.New("room is full")
+	}
+
+	return u.groupUc.AddUserToGroup(userID, groupID)
 }
 func (u *userUsecase) LeaveGroup(userID, groupID string) error {
 	return errors.New("not implemented")
 }
 func (u *userUsecase) GetUsersByGroup(groupID string) ([]*entity.User, error) {
-	return nil, errors.New("not implemented")
+	return u.userRepo.GetUsersByGroup(groupID)
 }

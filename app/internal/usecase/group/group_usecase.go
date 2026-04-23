@@ -1,9 +1,9 @@
 package group
 
 import (
+	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-	usecase "MuchUp/app/internal/usecase/interface"
 	"MuchUp/app/pkg/logger"
 )
 
