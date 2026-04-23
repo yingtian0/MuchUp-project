@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"MuchUp/app/internal/domain/entity"
-	"MuchUp/app/internal/service/dto"
+	"MuchUp/app/internal/usecase/dto"
 	"context"
 )
 

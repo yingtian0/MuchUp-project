@@ -42,3 +42,5 @@ func JWTMiddleware(next http.Handler, validator auth.TokenValidator) http.Handle
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+func CheckMemberLicense(next http.Handler)

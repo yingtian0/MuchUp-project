@@ -5,7 +5,8 @@ import "time"
 type EventType string
 
 const (
-	MessageEvent EventType = "message_event"
+	MessageEvent  EventType = "message_event"
+	JoinRoomEvent EventType = "joinroom_event"
 )
 
 type SendChatMessageInput struct {

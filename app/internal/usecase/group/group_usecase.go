@@ -3,7 +3,7 @@ package group
 import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-	"MuchUp/app/internal/domain/usecase"
+	usecase "MuchUp/app/internal/usecase/interface"
 	"MuchUp/app/pkg/logger"
 )
 

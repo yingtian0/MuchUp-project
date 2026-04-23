@@ -3,7 +3,7 @@ package message
 import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/internal/usecase/dto"
 	"errors"
 	"time"
 )
@@ -13,13 +13,13 @@ type messageUsecase struct {
 	userRepo    repository.UserRepository
 }
 
-func NewMessageUsecase(messageRepo repository.MessageRepository, userRepo repository.UserRepository) usecase.MessageUsecase {
+func NewMessageUsecase(messageRepo repository.MessageRepository, userRepo repository.UserRepository) *messageUsecase {
 	return &messageUsecase{
 		messageRepo: messageRepo,
 		userRepo:    userRepo,
 	}
 }
-func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message, error) {
+func (u *messageUsecase) SendMessage(message dto.SendChatMessageInput) (*entity.Message, error) {
 	err := u.messageRepo.CreateMessage(message)
 	if err != nil {
 		return nil, err
@@ -52,15 +52,8 @@ func (u *messageUsecase) SendMessage(message *entity.Message) error {
 
 func (u *messageUsecase) UnSentMessage(message *entity.Message) error {
 	return u.UnSentMessage(message)
-}
 
-func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message, error) {
-	err := u.messageRepo.UpdateMessage(message)
-	if err != nil {
-		return nil, err
-	}
-	return message, nil
-}
+
 func (u *messageUsecase) DeleteMessage(id string) error {
 	return u.messageRepo.DeleteMessage(id)
 }

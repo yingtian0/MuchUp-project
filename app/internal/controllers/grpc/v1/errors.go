@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/internal/controllers/usecase"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

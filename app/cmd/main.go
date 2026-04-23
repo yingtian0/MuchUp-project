@@ -6,9 +6,9 @@ import (
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
-	group_service "MuchUp/app/internal/service/group"
-	message_service "MuchUp/app/internal/service/message"
-	user_service "MuchUp/app/internal/service/user"
+	group_service "MuchUp/app/internal/usecase/group"
+	message_service "MuchUp/app/internal/usecase/message"
+	user_service "MuchUp/app/internal/usecase/user"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
