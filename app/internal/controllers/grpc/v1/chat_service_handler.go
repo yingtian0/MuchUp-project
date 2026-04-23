@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"MuchUp/app/internal/domain/entity"
-	"MuchUp/app/internal/domain/usecase"
 
 	chatv1 "MuchUp/app/proto/gen/go/chat/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (h *GrpcHandler) GetMessages(ctx context.Context, req *chatv1.GetMessagesRequest) (*chatv1.GetMessagesResponse, error) {
@@ -26,7 +27,11 @@ func (h *GrpcHandler) GetMessages(ctx context.Context, req *chatv1.GetMessagesRe
 }
 
 func (h *GrpcHandler) SendMessage(ctx context.Context, req *chatv1.SendMessageRequest) (*chatv1.SendMessageResponse, error) {
-	message, err := entity.NewMessage(req.GetUserId(), req.GetRoomId(), req.GetText())
+	if req.GetMessage() == nil {
+		return nil, status.Error(codes.InvalidArgument, "message is required")
+	}
+
+	message, err := entity.NewMessage(req.GetMessage().GetSenderId(), req.GetRoomId(), req.GetMessage().GetText())
 	if err != nil {
 		return nil, h.handleError(ctx, "SendMessage.NewMessage", err)
 	}
@@ -44,24 +49,7 @@ func (h *GrpcHandler) SendMessage(ctx context.Context, req *chatv1.SendMessageRe
 }
 
 func (h *GrpcHandler) MatchRoom(ctx context.Context, req *chatv1.MatchRoomRequest) (*chatv1.MatchRoomResponse, error) {
-	groups, err := h.groupRepo.GetGroupByUserID(req.GetUserId())
-	if err != nil {
-		return nil, h.handleError(ctx, "MatchRoom.GetGroupByUserID", err)
-	}
-	if len(groups) == 0 {
-		return nil, h.handleError(ctx, "MatchRoom.GetGroupByUserID", usecase.ErrNotFound)
-	}
-
-	group := groups[0]
-	ownerID := ""
-	if len(group.Members) > 0 {
-		ownerID = group.Members[0].ID
-	}
-
-	return &chatv1.MatchRoomResponse{
-		OwnerId: ownerID,
-		RooomId: group.ID,
-	}, nil
+	return nil, status.Error(codes.Unimplemented, "MatchRoom requires a user identifier source outside the request body")
 }
 
 func toChatMessage(msg *entity.Message) *chatv1.Message {

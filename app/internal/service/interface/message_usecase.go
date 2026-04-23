@@ -2,15 +2,14 @@ package usecase
 
 import (
 	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/service/dto"
+	"context"
 )
 
 type MessageUsecase interface {
-	SendMessage(message *entity.Message) error
-	UnSentMessage(message *entity.Message) error
+	SendChatMessage(ctx context.Context, input dto.SendChatMessageInput) error
 	GetMessage(id string) (*entity.Message, error)
-	GetMessageByID(id string) (*entity.Message, error)
 	CreateMessage(message *entity.Message) (*entity.Message, error)
 	UpdateMessage(message *entity.Message) (*entity.Message, error)
 	DeleteMessage(id string) error
-	GetMessagesByGroup(groupID string, limit, offset int) ([]*entity.Message, error)
 }

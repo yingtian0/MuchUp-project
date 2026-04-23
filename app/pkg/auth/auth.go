@@ -1,14 +1,17 @@
 package auth
 
-import  (
-	"github.com/golang-jwt/jwt/v5"
+import (
 	"context"
-	)
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type TokenValidator interface {
 	RefreshToken(ctx context.Context, tokenString string) (string, error)
-    ValidateToken(ctx context.Context, tokenString string) (*JWTClaims, error)
+	ValidateToken(ctx context.Context, tokenString string) (*JWTClaims, error)
+}
 
+type RoomMemberValidator interface {
 }
 
 type JWTClaims struct {
