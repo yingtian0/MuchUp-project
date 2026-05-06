@@ -1,0 +1,46 @@
+name: "テスト追加・改善"
+description: "テストの追加 / 改善 / 修正"
+title: "test: "
+labels: ["test"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何のテストを追加 / 改善するか
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 背景・理由
+      description: なぜこのテストが必要か（カバレッジ不足、リグレッション防止、不安定なテストの修正など）
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: テスト種別
+      options:
+        - ユニットテスト
+        - 結合テスト
+        - E2Eテスト
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: 対象
+      description: テスト対象の機能 / モジュール / ファイル
+    validations:
+      required: true
+  - type: textarea
+    id: cases
+    attributes:
+      label: テストケース
+      description: 追加 / 改善するテストケースをリストで
+      value: |
+        - [ ]
+    validations:
+      required: false

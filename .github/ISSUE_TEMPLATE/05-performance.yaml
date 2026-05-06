@@ -1,0 +1,59 @@
+name: "パフォーマンス改善"
+description: "パフォーマンスの問題を報告する / 改善を提案する"
+title: "perf: "
+labels: ["performance"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どこに / どのようなパフォーマンス問題があるか
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 背景・影響
+      description: この問題がユーザーや開発にどう影響しているか
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: パフォーマンス問題を再現するための手順
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: false
+  - type: textarea
+    id: metrics
+    attributes:
+      label: 計測値
+      description: 現状の数値と目標値（レスポンスタイム、メモリ使用量、レンダリング時間など）
+      value: |
+        - 現状:
+        - 目標:
+        - 計測方法:
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: 改善方針
+      description: 想定している改善アプローチ
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: 計測環境
+      value: |
+        - OS:
+        - ブラウザ / バージョン:
+        - Go:
+    validations:
+      required: false
