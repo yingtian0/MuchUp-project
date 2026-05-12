@@ -1,6 +1,0 @@
-doc/*
-gen/*
-
-go.work
-
-.env

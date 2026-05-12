@@ -2,9 +2,16 @@ PROTO_DIR := api-schema/proto
 GO_OUT := gen/go
 GOOGLEAPIS := third_party/googleapis
 DESCRIPTOR_OUT := api-gateway/envoy/proto/api.pb
-BUF := ./.tools/bin/buf
+TOOL_BIN := $(CURDIR)/.tools/bin
+BUF := $(TOOL_BIN)/buf
 BUF_CACHE_DIR ?= /tmp/buf-cache
 BUF_LLM_TEMPLATE := buf.gen.llm.yaml
+BUF_VERSION := v1.59.0
+PROTOC_GEN_GO_VERSION := v1.36.11
+PROTOC_GEN_GO_GRPC_VERSION := v1.5.1
+SWAG_VERSION := v1.16.4
+
+export PATH := $(TOOL_BIN):$(PATH)
 
 PROTO_FILES := \
 	$(PROTO_DIR)/chat/v1/chat.proto \
@@ -15,7 +22,14 @@ LLM_PROTO_FILE := $(PROTO_DIR)/llm/v1/llm.proto
 
 PROTO_FILE ?=
 
-.PHONY: proto gen gen-file gen-llm descriptor lint breaking clean
+.PHONY: tools-install proto gen gen-file gen-llm descriptor lint breaking clean
+
+tools-install:
+	mkdir -p $(TOOL_BIN)
+	GOBIN=$(TOOL_BIN) go install github.com/bufbuild/buf/cmd/buf@$(BUF_VERSION)
+	GOBIN=$(TOOL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_VERSION)
+	GOBIN=$(TOOL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GEN_GO_GRPC_VERSION)
+	GOBIN=$(TOOL_BIN) go install github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION)
 
 proto: gen descriptor
 
