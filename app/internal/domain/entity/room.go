@@ -26,6 +26,7 @@ const (
 
 const RandomRoomCapacity = 5
 
+// TODO: room usecase を実装する必要あり
 type Room struct {
 	ID       RoomID
 	Type     RoomType
