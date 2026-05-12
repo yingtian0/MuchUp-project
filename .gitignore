@@ -4,3 +4,4 @@ gen/*
 go.work
 
 .env
+.direnv/*
