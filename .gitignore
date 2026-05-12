@@ -1,7 +1,8 @@
-doc/*
-gen/*
+gen/
 
 go.work
 
 .env
-.direnv/*
+.direnv/
+.tools/bin/
+.cache/
