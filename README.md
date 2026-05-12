@@ -14,6 +14,14 @@ MuchUp は、**5 人をランダムでマッチング**し、
 
 ---
 
+## 開発セットアップ
+
+開発環境は Nix flakes と direnv を前提にしています。
+
+セットアップ手順は[docs/development/setup.md](docs/development/setup.md) を参照してください。
+
+---
+
 ## 全体アーキテクチャ
 
 ```text
