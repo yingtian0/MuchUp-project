@@ -12,18 +12,18 @@ import (
 type userUsecase struct {
 	userRepo  repository.UserRepository
 	groupRepo repository.ChatGroupRepository
-	groupUc   usecase.GroupUsecase
+	roomUc   usecase.
 }
 
 func NewUserUsecase(
 	userRepo repository.UserRepository,
 	groupRepo repository.ChatGroupRepository,
-	groupUc usecase.GroupUsecase,
+	roomUc usecase.,
 ) usecase.UserUsecase {
 	return &userUsecase{
 		userRepo:  userRepo,
-		groupRepo: groupRepo,
-		groupUc:   groupUc,
+		roomRepo: ,
+		roomUc:   ,
 	}
 }
 func (u *userUsecase) CreateUser(user *entity.User) (*entity.User, error) {
