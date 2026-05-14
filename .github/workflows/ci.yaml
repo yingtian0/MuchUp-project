@@ -1,0 +1,49 @@
+name: ci-check
+
+# goの設定
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - app
+          - authz-service
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+   
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: ${{ matrix.service }}/go.mod
+
+    - name: Check go mod tidy
+      run: |
+        go mod tidy
+        git diff --exit-code go.mod go.sum
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        working-directory: ${{ matrix.service }}
+
+# goのgolangci-lintの設定を書きたい
+
