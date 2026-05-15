@@ -43,16 +43,16 @@ const Chat: React.FC = () => {
     }
   }, [navigate, userId]);
 
-  const isNearBottom = () => {
+  const isNearBottom = useCallback(() => {
     const el = listRef.current;
     if (!el) return true;
     const threshold = 80;
     return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-  };
+  }, []);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  };
+  }, []);
 
   const loadMessages = useCallback(
     async (targetRoomId: string) => {
@@ -166,7 +166,7 @@ const Chat: React.FC = () => {
       }
       lastCountRef.current = messages.length;
     }
-  }, [messages]);
+  }, [isNearBottom, messages, scrollToBottom]);
 
   const handleScroll = () => {
     if (isNearBottom()) {
