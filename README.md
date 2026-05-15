@@ -27,39 +27,38 @@ MuchUp は、**5 人をランダムでマッチング**し、
 ```text
                ┌──────────────┐
                │   Frontend   │
-               │ Web  │
+               │     Web      │
                └─────┬────────┘
                      │ REST / WebSocket
                      ▼
-            ┌─────────────────────┐
-            │   Envoy Gateway     │
-            │  - Auth / Session   │
-            │  - Rate Limit       │
-            │  - HTTP → WebSocket │
-            │  - HTTP → gRPC │
-            │  - TLS Termination  │
-            └─────┬───────────────┘
-                  │ gRPC / WebSocket
-      ┌───────────┴─
-      ▼                       
+        ┌─────────────────────┐        ┌─────────────────┐
+        │   Envoy Gateway     │◀──────▶│  Auth Service    │
+        │  - Auth / Session   │  gRPC  │  - Login/Auth    │
+        │  - Rate Limit       │        │  - JWT / Session │
+        │  - HTTP → WebSocket │        │  - Token Verify  │
+        │  - HTTP → gRPC      │        │  - User Context  │
+        │  - TLS Termination  │        └─────────────────┘
+        └─────┬───────────────┘
+              │ gRPC / WebSocket
+              ▼
 
-┌───────────────┐　      ┌─────────────┐
+┌───────────────┐        ┌─────────────┐
 │ API Service   │        │ AI Service  │
 │ - Business    │  gRPC  │ - AI / ML   │
-│ - WebSocket   │─────▶  │ - gRPC / WS │
+│ - WebSocket   │──────▶ │ - gRPC / WS │
 │ - Redis client│        │             │
-└──────────────          └─────────────┘
-│
-▼
+└───────┬───────┘        └─────────────┘
+        │
+        ▼
 ┌───────────────┐
 │ Redis         │
-│  hash         │
-│ Streams       │
-└───────────────┘
-│
-▼
+│ - Hash        │
+│ - Streams     │
+└───────┬───────┘
+        │
+        ▼
 ┌───────────────┐
-│  DB           │
+│ DB            │
 └───────────────┘
 ```
 
