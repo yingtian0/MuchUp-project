@@ -1,8 +1,8 @@
-import type React from "react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "@/api/client";
-import { useToast } from "@/components/Toast";
+import type React from 'react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { authApi } from '@/api/client';
+import { useToast } from '@/components/Toast';
 
 const getErrorMessage = (err: unknown, fallback: string) =>
   err instanceof Error ? err.message : fallback;
@@ -10,8 +10,8 @@ const getErrorMessage = (err: unknown, fallback: string) =>
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,13 +20,13 @@ const Login: React.FC = () => {
 
     try {
       const res = await authApi.login({ email, password });
-      localStorage.setItem("session_token", res.token);
-      localStorage.setItem("user_id", res.userId);
-      localStorage.setItem("username", res.username);
-      toast.push("ログインしました", "success");
-      navigate("/chat");
+      localStorage.setItem('session_token', res.token);
+      localStorage.setItem('user_id', res.userId);
+      localStorage.setItem('username', res.username);
+      toast.push('ログインしました', 'success');
+      navigate('/chat');
     } catch (err: unknown) {
-      toast.push(getErrorMessage(err, "ログインに失敗しました"), "error");
+      toast.push(getErrorMessage(err, 'ログインに失敗しました'), 'error');
     } finally {
       setLoading(false);
     }
@@ -57,9 +57,7 @@ const Login: React.FC = () => {
 
         <div className="rounded-3xl p-8 md:p-10 card-surface border border-[#eadfce]">
           <h2 className="text-3xl font-display">ログイン</h2>
-          <p className="mt-2 text-sm text-[#6a5f52]">
-            登録済みのメールアドレスで続行します。
-          </p>
+          <p className="mt-2 text-sm text-[#6a5f52]">登録済みのメールアドレスで続行します。</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <label className="block text-sm font-medium text-[#5a5045]">
@@ -87,16 +85,13 @@ const Login: React.FC = () => {
               disabled={loading}
               className="w-full rounded-xl bg-[#d7815f] py-3 text-sm font-semibold text-white transition hover:bg-[#b04b2f] disabled:opacity-60"
             >
-              {loading ? "ログイン中..." : "ログインする"}
+              {loading ? 'ログイン中...' : 'ログインする'}
             </button>
           </form>
 
           <div className="mt-6 flex items-center justify-between text-sm text-[#6a5f52]">
             <span>アカウントがありませんか？</span>
-            <Link
-              to="/signup"
-              className="font-semibold text-[#b04b2f] hover:underline"
-            >
+            <Link to="/signup" className="font-semibold text-[#b04b2f] hover:underline">
               新規登録へ
             </Link>
           </div>

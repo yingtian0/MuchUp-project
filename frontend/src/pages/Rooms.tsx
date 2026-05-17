@@ -1,30 +1,28 @@
-import type React from "react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useToast } from "@/components/Toast";
+import type React from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useToast } from '@/components/Toast';
 import {
   clearRoomHistory,
   getRoomHistory,
   type RoomHistoryItem,
   removeRoomHistory,
-} from "@/utils/rooms";
+} from '@/utils/rooms';
 
 const Rooms: React.FC = () => {
   const toast = useToast();
-  const [history, setHistory] = useState<RoomHistoryItem[]>(() =>
-    getRoomHistory(),
-  );
+  const [history, setHistory] = useState<RoomHistoryItem[]>(() => getRoomHistory());
 
   const handleClear = () => {
     clearRoomHistory();
     setHistory([]);
-    toast.push("ルーム履歴をクリアしました", "success");
+    toast.push('ルーム履歴をクリアしました', 'success');
   };
 
   const handleRemove = (roomId: string) => {
     const next = removeRoomHistory(roomId);
     setHistory(next);
-    toast.push("履歴から削除しました", "info");
+    toast.push('履歴から削除しました', 'info');
   };
 
   return (
@@ -33,9 +31,7 @@ const Rooms: React.FC = () => {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-display">ルーム履歴</h1>
-            <p className="mt-2 text-sm text-[#6a5f52]">
-              過去にマッチしたルーム一覧です。
-            </p>
+            <p className="mt-2 text-sm text-[#6a5f52]">過去にマッチしたルーム一覧です。</p>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -66,24 +62,18 @@ const Rooms: React.FC = () => {
               className="flex flex-col gap-3 rounded-2xl border border-[#eadfce] bg-white px-6 py-4 shadow-sm md:flex-row md:items-center md:justify-between"
             >
               <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-[#b06c4a]">
-                  Room
-                </div>
-                <div className="mt-2 font-mono text-sm text-[#2b2620]">
-                  {item.roomId}
-                </div>
-                <div className="mt-1 text-xs text-[#6a5f52]">
-                  Owner: {item.ownerId}
-                </div>
+                <div className="text-xs uppercase tracking-[0.3em] text-[#b06c4a]">Room</div>
+                <div className="mt-2 font-mono text-sm text-[#2b2620]">{item.roomId}</div>
+                <div className="mt-1 text-xs text-[#6a5f52]">Owner: {item.ownerId}</div>
               </div>
               <div className="flex items-center gap-3 text-xs text-[#6a5f52]">
                 <span>
-                  {new Date(item.matchedAt).toLocaleString("ja-JP", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
+                  {new Date(item.matchedAt).toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
                   })}
                 </span>
                 <Link

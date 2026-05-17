@@ -3,7 +3,7 @@
  * スキーマ定義に基づき手動で実装しています。
  */
 
-const BASE_PATH = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const BASE_PATH = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export interface LoginRequest {
   email: string;
@@ -57,16 +57,12 @@ class BaseApi {
     this.basePath = basePath;
   }
 
-  protected async request<T>(
-    path: string,
-    method: string,
-    body?: unknown,
-  ): Promise<T> {
+  protected async request<T>(path: string, method: string, body?: unknown): Promise<T> {
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
-    const token = localStorage.getItem("session_token");
+    const token = localStorage.getItem('session_token');
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -79,11 +75,9 @@ class BaseApi {
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error("認証エラーが発生しました。");
+        throw new Error('認証エラーが発生しました。');
       }
-      const errorData = (await response
-        .json()
-        .catch(() => ({}))) as ApiErrorBody;
+      const errorData = (await response.json().catch(() => ({}))) as ApiErrorBody;
       throw new Error(errorData.message || `API Error: ${response.status}`);
     }
 
@@ -96,22 +90,22 @@ class AuthApi extends BaseApi {
    * ユーザーログイン
    */
   async login(req: LoginRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/v1/auth/login", "POST", req);
+    return this.request<AuthResponse>('/v1/auth/login', 'POST', req);
   }
 
   /**
    * ユーザー登録
    */
   async signup(req: SignupRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/v1/auth/signup", "POST", req);
+    return this.request<AuthResponse>('/v1/auth/signup', 'POST', req);
   }
 }
 
 class ChatApi extends BaseApi {
   async matchRoom(): Promise<MatchRoomResponse> {
     const res = await this.request<{ owner_id: string; room_id: string }>(
-      "/v1/chat/match",
-      "POST",
+      '/v1/chat/match',
+      'POST',
       {},
     );
 
@@ -124,7 +118,7 @@ class ChatApi extends BaseApi {
   async getMessages(roomId: string): Promise<ChatMessage[]> {
     const res = await this.request<{ message: ChatMessageResponse[] }>(
       `/v1/chat/rooms/${roomId}/messages`,
-      "GET",
+      'GET',
     );
 
     return (res.message || []).map((item) => ({
@@ -145,7 +139,7 @@ class ChatApi extends BaseApi {
       message_id: string;
       room_id: string;
       created_at: number;
-    }>(`/v1/chat/rooms/${params.roomId}/messages`, "POST", {
+    }>(`/v1/chat/rooms/${params.roomId}/messages`, 'POST', {
       user_id: params.userId,
       room_id: params.roomId,
       text: params.text,

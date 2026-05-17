@@ -16,12 +16,7 @@
 
 body {
   font-family: "Space Grotesk", "Noto Sans JP", sans-serif;
-  background: radial-gradient(
-    1200px 700px at 20% -10%,
-    #fff2d9 0%,
-    #f6f1e7 50%,
-    #efe5d7 100%
-  );
+  background: radial-gradient(1200px 700px at 20% -10%, #fff2d9 0%, #f6f1e7 50%, #efe5d7 100%);
   color: var(--ink);
 }
 

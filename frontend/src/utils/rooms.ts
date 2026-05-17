@@ -4,7 +4,7 @@ export interface RoomHistoryItem {
   matchedAt: number;
 }
 
-const STORAGE_KEY = "room_history";
+const STORAGE_KEY = 'room_history';
 
 export const getRoomHistory = (): RoomHistoryItem[] => {
   const raw = localStorage.getItem(STORAGE_KEY);

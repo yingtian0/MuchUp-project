@@ -1,13 +1,11 @@
-import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { type ChatMessage, chatApi } from "@/api/client";
-import { useToast } from "@/components/Toast";
-import { addRoomHistory, findRoomHistory } from "@/utils/rooms";
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { type ChatMessage, chatApi } from '@/api/client';
+import { useToast } from '@/components/Toast';
+import { addRoomHistory, findRoomHistory } from '@/utils/rooms';
 
-const DEFAULT_POLL_INTERVAL = Number(
-  import.meta.env.VITE_POLL_INTERVAL_MS || 5000,
-);
+const DEFAULT_POLL_INTERVAL = Number(import.meta.env.VITE_POLL_INTERVAL_MS || 5000);
 const POLL_OPTIONS = [3000, 5000, 10000];
 
 const getErrorMessage = (err: unknown, fallback: string) =>
@@ -20,12 +18,12 @@ const Chat: React.FC = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pollInterval, setPollInterval] = useState(() => {
-    const stored = localStorage.getItem("chat_poll_interval");
+    const stored = localStorage.getItem('chat_poll_interval');
     if (stored) {
       const parsed = Number(stored);
       if (!Number.isNaN(parsed)) return parsed;
@@ -38,12 +36,12 @@ const Chat: React.FC = () => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const lastCountRef = useRef(0);
 
-  const userId = useMemo(() => localStorage.getItem("user_id"), []);
-  const username = useMemo(() => localStorage.getItem("username"), []);
+  const userId = useMemo(() => localStorage.getItem('user_id'), []);
+  const username = useMemo(() => localStorage.getItem('username'), []);
 
   useEffect(() => {
     if (!userId) {
-      navigate("/login");
+      navigate('/login');
     }
   }, [navigate, userId]);
 
@@ -55,7 +53,7 @@ const Chat: React.FC = () => {
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, []);
 
   const loadMessages = useCallback(
@@ -67,10 +65,7 @@ const Chat: React.FC = () => {
         const res = await chatApi.getMessages(targetRoomId);
         setMessages(res);
       } catch (err: unknown) {
-        toast.push(
-          getErrorMessage(err, "メッセージ取得に失敗しました"),
-          "error",
-        );
+        toast.push(getErrorMessage(err, 'メッセージ取得に失敗しました'), 'error');
       } finally {
         setLoading(false);
         inFlightRef.current = false;
@@ -92,9 +87,9 @@ const Chat: React.FC = () => {
         matchedAt: Date.now(),
       });
       await loadMessages(res.roomId);
-      toast.push("ルームを作成しました", "success");
+      toast.push('ルームを作成しました', 'success');
     } catch (err: unknown) {
-      toast.push(getErrorMessage(err, "マッチに失敗しました"), "error");
+      toast.push(getErrorMessage(err, 'マッチに失敗しました'), 'error');
     } finally {
       setLoading(false);
     }
@@ -127,18 +122,18 @@ const Chat: React.FC = () => {
           createdAt: res.createdAt,
         },
       ]);
-      setText("");
+      setText('');
       setUnreadCount(0);
       requestAnimationFrame(scrollToBottom);
     } catch (err: unknown) {
-      toast.push(getErrorMessage(err, "送信に失敗しました"), "error");
+      toast.push(getErrorMessage(err, '送信に失敗しました'), 'error');
     } finally {
       setSending(false);
     }
   };
 
   useEffect(() => {
-    const paramRoomId = searchParams.get("roomId");
+    const paramRoomId = searchParams.get('roomId');
     if (paramRoomId) {
       setRoomId(paramRoomId);
       const entry = findRoomHistory(paramRoomId);
@@ -184,15 +179,15 @@ const Chat: React.FC = () => {
   const formatTime = (createdAt: number) => {
     const ts = createdAt < 1_000_000_000_000 ? createdAt * 1000 : createdAt;
     const date = new Date(ts);
-    return date.toLocaleString("ja-JP", {
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
   const handlePollChange = (value: number) => {
     setPollInterval(value);
-    localStorage.setItem("chat_poll_interval", String(value));
+    localStorage.setItem('chat_poll_interval', String(value));
   };
 
   return (
@@ -205,15 +200,11 @@ const Chat: React.FC = () => {
                 Session
               </p>
               <h2 className="mt-3 text-2xl font-display">ルームを開く</h2>
-              <p className="mt-2 text-sm text-[#6a5f52]">
-                マッチするとルームIDが発行されます。
-              </p>
+              <p className="mt-2 text-sm text-[#6a5f52]">マッチするとルームIDが発行されます。</p>
             </div>
             <div className="text-right text-xs text-[#6a5f52]">
               <div>ユーザー</div>
-              <div className="font-semibold text-[#2b2620]">
-                {username || "Unknown"}
-              </div>
+              <div className="font-semibold text-[#2b2620]">{username || 'Unknown'}</div>
             </div>
           </div>
 
@@ -224,16 +215,16 @@ const Chat: React.FC = () => {
               disabled={loading}
               className="w-full rounded-xl bg-[#2b2620] py-3 text-sm font-semibold text-white transition hover:bg-[#1e1a16] disabled:opacity-60"
             >
-              {loading ? "マッチ中..." : "マッチしてルームを作成"}
+              {loading ? 'マッチ中...' : 'マッチしてルームを作成'}
             </button>
             <div className="rounded-2xl border border-[#efe3d2] bg-[#fff6e8] p-4 text-sm text-[#5a5045]">
               <div className="flex items-center justify-between">
                 <span>Room ID</span>
-                <span className="font-mono text-xs">{roomId || "未発行"}</span>
+                <span className="font-mono text-xs">{roomId || '未発行'}</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span>Owner</span>
-                <span className="font-mono text-xs">{ownerId || "-"}</span>
+                <span className="font-mono text-xs">{ownerId || '-'}</span>
               </div>
             </div>
             <button
@@ -254,8 +245,8 @@ const Chat: React.FC = () => {
                     onClick={() => handlePollChange(option)}
                     className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                       pollInterval === option
-                        ? "border-[#2b2620] text-[#2b2620]"
-                        : "border-[#d4c6b5] text-[#6a5f52] hover:border-[#bda894]"
+                        ? 'border-[#2b2620] text-[#2b2620]'
+                        : 'border-[#d4c6b5] text-[#6a5f52] hover:border-[#bda894]'
                     }`}
                   >
                     {option / 1000}s
@@ -271,11 +262,11 @@ const Chat: React.FC = () => {
             <div>
               <h2 className="text-2xl font-display">チャット</h2>
               <p className="text-sm text-[#6a5f52]">
-                {roomId ? "ルームに参加中" : "ルームを作成して開始"}
+                {roomId ? 'ルームに参加中' : 'ルームを作成して開始'}
               </p>
             </div>
             <div className="text-xs text-[#6a5f52]">
-              {loading ? "取得中..." : `${messages.length} messages`}
+              {loading ? '取得中...' : `${messages.length} messages`}
             </div>
           </div>
 
@@ -299,21 +290,17 @@ const Chat: React.FC = () => {
               return (
                 <div
                   key={msg.messageId}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
                     className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
                       isOwn
-                        ? "bg-[#d7815f] text-white"
-                        : "bg-white border border-[#ede0cf] text-[#2b2620]"
+                        ? 'bg-[#d7815f] text-white'
+                        : 'bg-white border border-[#ede0cf] text-[#2b2620]'
                     }`}
                   >
                     <p>{msg.text}</p>
-                    <div
-                      className={`mt-2 text-xs ${
-                        isOwn ? "text-white/80" : "text-[#8a7c6c]"
-                      }`}
-                    >
+                    <div className={`mt-2 text-xs ${isOwn ? 'text-white/80' : 'text-[#8a7c6c]'}`}>
                       {formatTime(msg.createdAt)}
                     </div>
                   </div>
@@ -336,9 +323,7 @@ const Chat: React.FC = () => {
           <form onSubmit={handleSend} className="mt-6 flex gap-3">
             <input
               type="text"
-              placeholder={
-                roomId ? "メッセージを入力" : "ルーム作成後に入力できます"
-              }
+              placeholder={roomId ? 'メッセージを入力' : 'ルーム作成後に入力できます'}
               className="flex-1 rounded-xl border border-[#e5d8c7] bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d7815f]"
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -349,7 +334,7 @@ const Chat: React.FC = () => {
               disabled={!roomId || sending || !text.trim()}
               className="rounded-xl bg-[#2b2620] px-5 text-sm font-semibold text-white transition hover:bg-[#1e1a16] disabled:opacity-40"
             >
-              {sending ? "送信中" : "送信"}
+              {sending ? '送信中' : '送信'}
             </button>
           </form>
         </section>

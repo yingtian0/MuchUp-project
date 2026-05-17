@@ -1,11 +1,11 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import AppShell from "./components/AppShell";
-import { ToastProvider } from "./components/Toast";
-import Chat from "./pages/Chat";
-import Login from "./pages/Login";
-import Profile from "./pages/Profile";
-import Rooms from "./pages/Rooms";
-import Signup from "./pages/Signup";
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AppShell from './components/AppShell';
+import { ToastProvider } from './components/Toast';
+import Chat from './pages/Chat';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import Rooms from './pages/Rooms';
+import Signup from './pages/Signup';
 
 function App() {
   return (
