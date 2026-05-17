@@ -6,12 +6,11 @@ import django
 import grpc
 from django.conf import settings
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "llm_service.settings")
-django.setup()
-
 from llm_service.protobuf import GenerateReplyRequest, GenerateReplyResponse, TokenUsage
 from llm_service.services import ReplyGenerator
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "llm_service.settings")
+django.setup()
 
 logger = logging.getLogger("llm_service")
 
