@@ -1,14 +1,36 @@
 package entity
 
 import (
+	"MuchUp/app/utils"
 	"errors"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
-type UserID string
 type RoomID string
 type MessageID string
+type SenderType string
+type MessageKind string
+type MessageStatus string
+
+const (
+	SenderTypeUser SenderType = "USER"
+	SenderTypeAI   SenderType = "AI"
+)
+
+const (
+	MessageKindText    MessageKind = "TEXT"
+	MessageKindMedia   MessageKind = "MEDIA"
+	MessageKindSticker MessageKind = "STICKER"
+)
+
+const (
+	MessageStatusPending MessageStatus = "PENDING"
+	MessageStatusSent    MessageStatus = "SENT"
+	MessageStatusFailed  MessageStatus = "FAILED"
+	MessageStatusDeleted MessageStatus = "DELETED"
+)
 
 type Message struct {
 	ID              MessageID `json:"id"`
@@ -21,32 +43,19 @@ type Message struct {
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 	DeletedAt       time.Time `json:"deleted_at"`
-	ID     MessageID
-	RoomID RoomID
 
-	SenderID   UserID
 	SenderType SenderType
 
-	Kind      MessageKind
-	Text      *string
-	MediaURL  *string
-	StickerID *string
+	Kind MessageKind
 
 	Status MessageStatus
 
-	ClientMessageID *string
-	IdempotencyKey  *string
+	IdempotencyKey *string
 
 	StreamID *string
 	Sequence int64
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
 }
 
-func NewMessage(userID, roomID, text string) (*Message, error) {
-	if len(text) == 0 {
 func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) (*Message, error) {
 	text = strings.TrimSpace(text)
 	if roomID == "" {
@@ -62,13 +71,15 @@ func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) 
 		return nil, errors.New("text is too long")
 	}
 
-	now := time.Now()
 	return &Message{
 		ID:              MessageID(utils.GenerateUUID()),
 		ClientMessageID: utils.StringPtr(utils.GenerateUUID()),
-		SenderID:        UserID(userID),
-		RoomID:          RoomID(roomID),
+		SenderID:        senderID,
+		RoomID:          roomID,
 		Text:            &text,
+		SenderType:      SenderTypeUser,
+		Kind:            MessageKindText,
+		Status:          MessageStatusSent,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}, nil

@@ -6,5 +6,5 @@ import (
 )
 
 type LLMHandler interface {
-	HandleRoomCreated(ctx context.Context, room *entity.Room, owner *entity.User) error
+	HandleRoomCreated(ctx context.Context, room *entity.Room, owner *entity.UserProfile) error
 }

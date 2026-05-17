@@ -13,7 +13,7 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-func (r *userRepository) CreateUser(user *entity.User) error {
+func (r *userRepository) CreateUser(user *entity.UserProfile) error {
 	userShema := mapper.ToUserSchema(user)
 	err := r.db.Create(userShema).Error
 	if err != nil {
@@ -21,7 +21,7 @@ func (r *userRepository) CreateUser(user *entity.User) error {
 	}
 	return nil
 }
-func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
+func (r *userRepository) GetUserByEmail(email string) (*entity.UserProfile, error) {
 	var userSchema schema.UserSchema
 	err := r.db.Where("email = ?", email).First(&userSchema).Error
 	if err != nil {
@@ -29,7 +29,7 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	}
 	return mapper.ToUserEntity(&userSchema), nil
 }
-func (r *userRepository) GetUserByPhone(phone string) (*entity.User, error) {
+func (r *userRepository) GetUserByPhone(phone string) (*entity.UserProfile, error) {
 	var userSchema schema.UserSchema
 	err := r.db.Where("phone = ?", phone).First(&userSchema).Error
 	if err != nil {
@@ -37,7 +37,7 @@ func (r *userRepository) GetUserByPhone(phone string) (*entity.User, error) {
 	}
 	return mapper.ToUserEntity(&userSchema), nil
 }
-func (r *userRepository) GetUserByID(id string) (*entity.User, error) {
+func (r *userRepository) GetUserByID(id string) (*entity.UserProfile, error) {
 	var userSchema schema.UserSchema
 	err := r.db.Where("id = ?", id).First(&userSchema).Error
 	if err != nil {
@@ -45,16 +45,16 @@ func (r *userRepository) GetUserByID(id string) (*entity.User, error) {
 	}
 	return mapper.ToUserEntity(&userSchema), nil
 }
-func (r *userRepository) UpdateUser(user *entity.User) error {
+func (r *userRepository) UpdateUser(user *entity.UserProfile) error {
 	return r.db.Save(mapper.ToUserSchema(user)).Error
 }
 func (r *userRepository) DeleteUser(id string) error {
 	return r.db.Delete(&schema.UserSchema{}, "id = ?", id).Error
 }
-func (r *userRepository) GetUsers(limit, offset int) ([]*entity.User, error) {
+func (r *userRepository) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
 	return nil, nil
 }
-func (r *userRepository) GetUsersByRoom(roomID string) ([]*entity.User, error) {
+func (r *userRepository) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
 	var userSchemas []schema.UserSchema
 	err := r.db.
 		Joins("JOIN user_rooms ON user_rooms.user_id = users.id").
@@ -64,7 +64,7 @@ func (r *userRepository) GetUsersByRoom(roomID string) ([]*entity.User, error) {
 		return nil, err
 	}
 
-	users := make([]*entity.User, 0, len(userSchemas))
+	users := make([]*entity.UserProfile, 0, len(userSchemas))
 	for i := range userSchemas {
 		users = append(users, mapper.ToUserEntity(&userSchemas[i]))
 	}

@@ -6,13 +6,13 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(user *entity.User) error
-	GetUserByID(id string) (*entity.User, error)
-	UpdateUser(user *entity.User) error
+	CreateUser(user *entity.UserProfile) error
+	GetUserByID(id string) (*entity.UserProfile, error)
+	UpdateUser(user *entity.UserProfile) error
 	DeleteUser(id string) error
-	GetUsers(limit, offset int) ([]*entity.User, error)
-	GetUserByEmail(email string) (*entity.User, error)
-	GetUsersByRoom(roomID string) ([]*entity.User, error)
+	GetUsers(limit, offset int) ([]*entity.UserProfile, error)
+	GetUserByEmail(email string) (*entity.UserProfile, error)
+	GetUsersByRoom(roomID string) ([]*entity.UserProfile, error)
 }
 
 type RoomRepository interface {

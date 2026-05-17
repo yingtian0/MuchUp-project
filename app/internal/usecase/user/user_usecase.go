@@ -18,36 +18,36 @@ func NewUserUsecase(
 		userRepo: userRepo,
 	}
 }
-func (u *userUsecase) CreateUser(user *entity.User) (*entity.User, error) {
+func (u *userUsecase) CreateUser(user *entity.UserProfile) (*entity.UserProfile, error) {
 	if user == nil {
 		return nil, errors.New("user is required")
 	}
 	if err := u.userRepo.CreateUser(user); err != nil {
 		return nil, err
 	}
-	created, err := u.userRepo.GetUserByID(user.ID)
+	created, err := u.userRepo.GetUserByID(string(user.ID))
 	if err != nil {
 		return user, nil
 	}
 	return created, nil
 }
 
-func (u *userUsecase) GetUserByID(id string) (*entity.User, error) {
+func (u *userUsecase) GetUserByID(id string) (*entity.UserProfile, error) {
 	return u.userRepo.GetUserByID(id)
 }
 
-func (u *userUsecase) GetUserByEmail(email string) (*entity.User, error) {
+func (u *userUsecase) GetUserByEmail(email string) (*entity.UserProfile, error) {
 	return u.userRepo.GetUserByEmail(email)
 }
 
-func (u *userUsecase) UpdateUser(user *entity.User) (*entity.User, error) {
+func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile, error) {
 	if user == nil {
 		return nil, errors.New("user is required")
 	}
 	if err := u.userRepo.UpdateUser(user); err != nil {
 		return nil, err
 	}
-	updated, err := u.userRepo.GetUserByID(user.ID)
+	updated, err := u.userRepo.GetUserByID(string(user.ID))
 	if err != nil {
 		return user, nil
 	}
@@ -58,7 +58,7 @@ func (u *userUsecase) DeleteUser(id string) error {
 	return u.userRepo.DeleteUser(id)
 }
 
-func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.User, error) {
+func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
 	return u.userRepo.GetUsers(limit, offset)
 }
 
@@ -74,6 +74,6 @@ func (u *userUsecase) LeaveRoom(userID, roomID string) error {
 	return errors.New("not implemented")
 }
 
-func (u *userUsecase) GetUsersByRoom(roomID string) ([]*entity.User, error) {
+func (u *userUsecase) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
 	return u.userRepo.GetUsersByRoom(roomID)
 }

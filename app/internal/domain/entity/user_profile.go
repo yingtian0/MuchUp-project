@@ -8,6 +8,7 @@ import (
 type UserID string
 
 type UserStatus string
+type PrimaryAuthMethod string
 
 const (
 	UserStatusActive    UserStatus = "ACTIVE"
@@ -15,10 +16,25 @@ const (
 	UserStatusDeleted   UserStatus = "DELETED"
 )
 
+const (
+	AuthMethodEmail PrimaryAuthMethod = "email"
+	AuthMethodPhone PrimaryAuthMethod = "phone"
+)
+
 type UserProfile struct {
-	ID          UserID
-	DisplayName string
-	AvatarURL   *string
+	ID            UserID
+	NickName      string
+	DisplayName   string
+	Email         *string
+	PhoneNumber   *string
+	PasswordHash  string
+	EmailVerified bool
+	PhoneVerified bool
+	AuthMethod    PrimaryAuthMethod
+	AvatarURL     *string
+	UsagePurpose  string
+	IsActive      bool
+	IsBanned      bool
 
 	Status UserStatus
 	IsBot  bool
@@ -30,7 +46,7 @@ type UserProfile struct {
 }
 
 func (u *UserProfile) CanJoinMatching() bool {
-	return u.Status == UserStatusActive && !u.IsBot
+	return u.Status == UserStatusActive && !u.IsBot && u.IsActive && !u.IsBanned
 }
 
 func (u *UserProfile) CanSendMessageTo(target UserID) bool {

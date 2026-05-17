@@ -318,7 +318,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		Content:   input.Content,
 		UserID:    input.SenderID,
 		RoomID:    input.RoomID,
-		Username:  user.DisplayName,
+		Username:  user.NickName,
 		Timestamp: input.CreatedAt.Unix(),
 	}
 

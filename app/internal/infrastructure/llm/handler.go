@@ -28,12 +28,15 @@ func NewHandler(conn *grpc.ClientConn, messageStream repository.MessageStreamSto
 	}
 }
 
-func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owner *entity.User) error {
+func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owner *entity.UserProfile) error {
 	ownerName := owner.NickName
+	if ownerName == "" {
+		ownerName = owner.DisplayName
+	}
 	request := &llmv1.GenerateReplyRequest{
 		RoomId:       string(room.ID),
 		SessionId:    string(room.ID),
-		TargetUserId: owner.ID,
+		TargetUserId: string(owner.ID),
 		SystemPrompt: "You are a chat facilitator for a newly created social room. Reply in Japanese with one short welcoming message.",
 		Model:        "facilitator-v1",
 		Temperature:  0.7,
@@ -42,7 +45,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 			{
 				MessageId: "room-created",
 				RoomId:    string(room.ID),
-				UserId:    owner.ID,
+				UserId:    string(owner.ID),
 				Role:      "system",
 				Content:   "room created for " + ownerName,
 				CreatedAt: time.Now().Unix(),
