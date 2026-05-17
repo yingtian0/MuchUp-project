@@ -10,6 +10,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+  "pytest>=8.0",
+  "pytest-django>=4.9",
   "ruff>=0.12",
 ]
 
@@ -28,3 +30,7 @@ unfixable = []
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "llm_service.settings"
+python_files = ["test_*.py"]
