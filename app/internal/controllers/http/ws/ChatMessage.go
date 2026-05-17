@@ -45,7 +45,7 @@ type Client struct {
 	Conn   *websocket.Conn // 実際の WebSocket 接続
 	Send   chan []byte     // クライアントへ送信するメッセージキュー
 	UserID string          // 接続ユーザーID
-	RoomID string          // 現在参加中のグループID
+	RoomID string          // 現在参加中のルームID
 }
 
 // ChatHandler は WebSocket メッセージ処理とユースケース呼び出しを担当する。
@@ -88,7 +88,7 @@ func (h *Hub) Run() {
 			h.Clients[client] = true
 			h.Mutex.Unlock()
 
-			// ユーザー接続通知を同じグループへ送る
+			// ユーザー接続通知を同じルームへ送る
 			message := WebSocketMessage{
 				Type: "user_connected",
 				Data: map[string]string{
@@ -97,7 +97,7 @@ func (h *Hub) Run() {
 				},
 			}
 			if data, err := json.Marshal(message); err == nil {
-				h.BroadcastToGroup(data, client.RoomID)
+				h.BroadcastToRoom(data, client.RoomID)
 			}
 
 		// クライアント切断
@@ -109,7 +109,7 @@ func (h *Hub) Run() {
 			}
 			h.Mutex.Unlock()
 
-			// ユーザー切断通知を同じグループへ送る
+			// ユーザー切断通知を同じルームへ送る
 			message := WebSocketMessage{
 				Type: "user_disconnected",
 				Data: map[string]string{
@@ -118,7 +118,7 @@ func (h *Hub) Run() {
 				},
 			}
 			if data, err := json.Marshal(message); err == nil {
-				h.BroadcastToGroup(data, client.RoomID)
+				h.BroadcastToRoom(data, client.RoomID)
 			}
 
 		// 全体ブロードキャスト
@@ -140,8 +140,8 @@ func (h *Hub) Run() {
 	}
 }
 
-// 指定グループに属するクライアントへメッセージを送る。
-func (h *Hub) BroadcastToGroup(message []byte, roomID string) {
+// 指定ルームに属するクライアントへメッセージを送る。
+func (h *Hub) BroadcastToRoom(message []byte, roomID string) {
 	h.Mutex.RLock()
 	defer h.Mutex.RUnlock()
 
@@ -162,7 +162,7 @@ func (h *Hub) BroadcastToGroup(message []byte, roomID string) {
 
 // HandleWebSocket handles WebSocket connections for chat.
 // @Summary WebSocket Chat
-// @Description Connects via WebSocket for direct and group chat messaging
+// @Description Connects via WebSocket for direct and room chat messaging
 // @Tags chat
 // @Accept json
 // @Produce json
@@ -177,8 +177,8 @@ func (ch *ChatHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// groupID は無くても許容している
-	RoomID, ok := r.Context().Value(middleware.GroupIDContextKey).(string)
+	// roomID は無くても許容している
+	RoomID, ok := r.Context().Value(middleware.RoomIDContextKey).(string)
 	if !ok {
 		RoomID = ""
 	}
@@ -237,8 +237,8 @@ func (c *Client) ReadPump(handler *ChatHandler) {
 			handler.HandleChatMessage(c, wsMessage)
 		case "typing":
 			handler.HandleTyping(c, wsMessage)
-		case "join_group":
-			handler.HandleJoinGroup(c, wsMessage)
+			//	case "join_room":
+			//		handler.HandleJoinRoom(c, wsMessage)
 		}
 	}
 }
@@ -283,9 +283,6 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		roomID, _ = data["roomId"].(string)
 	}
 	if roomID == "" {
-		roomID, _ = data["groupId"].(string)
-	}
-	if roomID == "" {
 		roomID = client.RoomID
 	}
 
@@ -321,7 +318,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		Content:   input.Content,
 		UserID:    input.SenderID,
 		RoomID:    input.RoomID,
-		Username:  user.NickName,
+		Username:  user.DisplayName,
 		Timestamp: input.CreatedAt.Unix(),
 	}
 
@@ -338,7 +335,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		if messageType == "direct" && recipientId != "" {
 			ch.Hub.SendToUser(responseData, recipientId)
 		} else if roomID != "" {
-			ch.Hub.BroadcastToGroup(responseData, roomID)
+			ch.Hub.BroadcastToRoom(responseData, roomID)
 		}
 	}
 }
@@ -363,7 +360,7 @@ func (h *Hub) SendToUser(message []byte, userID string) {
 }
 
 // タイピング通知処理。
-// 誰が typing 中かを同一グループへブロードキャストする。
+// 誰が typing 中かを同一ルームへブロードキャストする。
 func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) {
 	response := WebSocketMessage{
 		Type:   "typing",
@@ -376,83 +373,86 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 	}
 
 	if responseData, err := json.Marshal(response); err == nil {
-		ch.Hub.BroadcastToGroup(responseData, client.RoomID)
+		ch.Hub.BroadcastToRoom(responseData, client.RoomID)
 	}
 }
 
-// グループ参加処理。
-// 既存グループがあれば退出通知を出し、新しいグループへ所属を切り替える。
-func (ch *ChatHandler) HandleJoinGroup(client *Client, wsMessage WebSocketMessage) {
-	data, ok := wsMessage.Data.(map[string]interface{})
-	if !ok {
-		return
-	}
+// ルーム参加処理。
+// 既存ルームがあれば退出通知を出し、新しいルームへ所属を切り替える。
 
-	newGroupID, ok := data["group_id"].(string)
-	if !ok {
-		return
-	}
-
-	if err := ch.UserUsecase.JoinGroup(client.UserID, newGroupID); err != nil {
-		response := WebSocketMessage{
-			Type: "join_group_error",
-			Data: map[string]string{
-				"user_id":  client.UserID,
-				"group_id": newGroupID,
-				"error":    err.Error(),
-			},
-		}
-		if responseData, marshalErr := json.Marshal(response); marshalErr == nil {
-			client.Send <- responseData
-		}
-		return
-	}
-
-	// すでに別グループへ所属していれば退出通知
-	if client.RoomID != "" {
-		leaveMessage := WebSocketMessage{
-			Type: "user_left",
-			Data: map[string]string{
-				"user_id":  client.UserID,
-				"group_id": client.RoomID,
-			},
-		}
-		if data, err := json.Marshal(leaveMessage); err == nil {
-			ch.Hub.BroadcastToGroup(data, client.RoomID)
-		}
-	}
-
-	// 所属グループを更新
-	client.RoomID = newGroupID
-
-	// 新グループへ参加通知
-	joinMessage := WebSocketMessage{
-		Type: "user_joined",
-		Data: map[string]string{
-			"user_id":  client.UserID,
-			"group_id": client.RoomID,
-		},
-	}
-	if data, err := json.Marshal(joinMessage); err == nil {
-		ch.Hub.BroadcastToGroup(data, client.RoomID)
-	}
-
-	// 新規グループ作成時に AI エージェントの自己紹介メッセージを送信
-	// client.UserID が ai_agent 自身でない場合のみ送る
-	if client.UserID != "ai_agent" && newGroupID != "" {
-		aiMessage := WebSocketMessage{
-			Type: "new_message",
-			Data: map[string]interface{}{
-				"id":        "ai_intro",
-				"content":   "こんにちは!私はこのグループをサポートするAIです。皆さんが仲良くなれるようにお手伝いします。何か質問があれば気軽に話しかけてくださいね!",
-				"user_id":   "ai_agent",
-				"group_id":  newGroupID,
-				"username":  "AIエージェント",
-				"timestamp": 0,
-			},
-		}
-		if data, err := json.Marshal(aiMessage); err == nil {
-			ch.Hub.BroadcastToGroup(data, newGroupID)
-		}
-	}
-}
+// TODO: 実装変更予定のためコメントアウト
+//func (ch *ChatHandler) HandleJoinRoom(client *Client, wsMessage WebSocketMessage) {
+//	data, ok := wsMessage.Data.(map[string]interface{})
+//	if !ok {
+//		return
+//	}
+//
+//	newRoomID, ok := data["room_id"].(string)
+//	if !ok {
+//		return
+//	}
+//
+//	if err := ch.UserUsecase.JoinRoom(client.UserID, newRoomID); err != nil {
+//		response := WebSocketMessage{
+//			Type: "join_room_error",
+//			Data: map[string]string{
+//				"user_id":  client.UserID,
+//				"room_id":  newRoomID,
+//				"error":    err.Error(),
+//			},
+//		}
+//		if responseData, marshalErr := json.Marshal(response); marshalErr == nil {
+//			client.Send <- responseData
+//		}
+//		return
+//	}
+//
+//	// すでに別ルームへ所属していれば退出通知
+//	if client.RoomID != "" {
+//		leaveMessage := WebSocketMessage{
+//			Type: "user_left",
+//			Data: map[string]string{
+//				"user_id":  client.UserID,
+//				"room_id":  client.RoomID,
+//			},
+//		}
+//		if data, err := json.Marshal(leaveMessage); err == nil {
+//			ch.Hub.BroadcastToRoom(data, client.RoomID)
+//		}
+//	}
+//
+//	// 所属ルームを更新
+//	client.RoomID = newRoomID
+//
+//	// 新ルームへ参加通知
+//	joinMessage := WebSocketMessage{
+//		Type: "user_joined",
+//		Data: map[string]string{
+//			"user_id":  client.UserID,
+//			"room_id":  client.RoomID,
+//		},
+//	}
+//	if data, err := json.Marshal(joinMessage); err == nil {
+//		ch.Hub.BroadcastToRoom(data, client.RoomID)
+//	}
+//
+//	// 新規ルーム作成時に AI エージェントの自己紹介メッセージを送信
+//	// client.UserID が ai_agent 自身でない場合のみ送る
+//	if client.UserID != "ai_agent" && newRoomID != "" {
+//		aiMessage := WebSocketMessage{
+//			Type: "new_message",
+//			Data: map[string]interface{}{
+//				"id":        "ai_intro",
+//				"content":   "こんにちは!私はこのルームをサポートするAIです。皆さんが仲良くなれるようにお手伝いします。何か質問があれば気軽に話しかけてくださいね!",
+//				"user_id":   "ai_agent",
+//				"room_id":   newRoomID,
+//				"username":  "AIエージェント",
+//				"timestamp": 0,
+//			},
+//		}
+//		if data, err := json.Marshal(aiMessage); err == nil {
+//			ch.Hub.BroadcastToRoom(data, newRoomID)
+//		}
+//	}
+//}
+//

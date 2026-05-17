@@ -54,11 +54,11 @@ func (r *userRepository) DeleteUser(id string) error {
 func (r *userRepository) GetUsers(limit, offset int) ([]*entity.User, error) {
 	return nil, nil
 }
-func (r *userRepository) GetUsersByGroup(groupID string) ([]*entity.User, error) {
+func (r *userRepository) GetUsersByRoom(roomID string) ([]*entity.User, error) {
 	var userSchemas []schema.UserSchema
 	err := r.db.
-		Joins("JOIN user_chat_groups ON user_chat_groups.user_id = users.id").
-		Where("user_chat_groups.chat_group_id = ?", groupID).
+		Joins("JOIN user_rooms ON user_rooms.user_id = users.id").
+		Where("user_rooms.room_id = ?", roomID).
 		Find(&userSchemas).Error
 	if err != nil {
 		return nil, err

@@ -28,11 +28,11 @@ func NewHandler(conn *grpc.ClientConn, messageStream repository.MessageStreamSto
 	}
 }
 
-func (h *Handler) HandleRoomCreated(ctx context.Context, group *entity.ChatGroup, owner *entity.User) error {
+func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owner *entity.User) error {
 	ownerName := owner.NickName
 	request := &llmv1.GenerateReplyRequest{
-		RoomId:       group.ID,
-		SessionId:    group.ID,
+		RoomId:       string(room.ID),
+		SessionId:    string(room.ID),
 		TargetUserId: owner.ID,
 		SystemPrompt: "You are a chat facilitator for a newly created social room. Reply in Japanese with one short welcoming message.",
 		Model:        "facilitator-v1",
@@ -41,7 +41,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, group *entity.ChatGroup
 		Messages: []*llmv1.ContextMessage{
 			{
 				MessageId: "room-created",
-				RoomId:    group.ID,
+				RoomId:    string(room.ID),
 				UserId:    owner.ID,
 				Role:      "system",
 				Content:   "room created for " + ownerName,
@@ -68,12 +68,13 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, group *entity.ChatGroup
 	}
 	content := response.GetContent()
 	message := &entity.Message{
-		MessageID: utils.GenerateUUID(),
-		SenderID:  aiAgentUserID,
-		GroupID:   group.ID,
-		Text:      &content,
-		CreatedAt: createdAt,
-		UpdatedAt: createdAt,
+		ID:              entity.MessageID(utils.GenerateUUID()),
+		ClientMessageID: utils.StringPtr("room-created"),
+		SenderID:        entity.UserID(aiAgentUserID),
+		RoomID:          room.ID,
+		Text:            &content,
+		CreatedAt:       createdAt,
+		UpdatedAt:       createdAt,
 	}
 	_, err = h.messageStream.AppendMessage(ctx, message)
 	return err

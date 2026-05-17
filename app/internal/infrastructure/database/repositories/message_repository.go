@@ -37,9 +37,9 @@ func (r *messageRepository) UpdateMessage(message *entity.Message) error {
 func (r *messageRepository) DeleteMessage(id string) error {
 	return r.db.Delete(&schema.MessageSchema{}, "id = ?", id).Error
 }
-func (r *messageRepository) GetMessagesByGroup(groupID string, limit, offset int) ([]*entity.Message, error) {
+func (r *messageRepository) GetMessagesByRoom(roomID string, limit, offset int) ([]*entity.Message, error) {
 	var messagesSchema []schema.MessageSchema
-	err := r.db.Where("group_id = ?", groupID).Limit(limit).Offset(offset).Order("created_at DESC").Find(&messagesSchema).Error
+	err := r.db.Where("room_id = ?", roomID).Limit(limit).Offset(offset).Order("created_at DESC").Find(&messagesSchema).Error
 	if err != nil {
 		return nil, err
 	}

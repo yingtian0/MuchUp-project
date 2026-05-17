@@ -36,8 +36,8 @@ func (m *MockUserRepository) GetUsers(limit, offset int) ([]*entity.User, error)
 	}
 	return args.Get(0).([]*entity.User), args.Error(1)
 }
-func (m *MockUserRepository) GetUsersByGroup(groupID string) ([]*entity.User, error) {
-	args := m.Called(groupID)
+func (m *MockUserRepository) GetUsersByRoom(roomID string) ([]*entity.User, error) {
+	args := m.Called(roomID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

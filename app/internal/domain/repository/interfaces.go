@@ -11,8 +11,18 @@ type UserRepository interface {
 	UpdateUser(user *entity.User) error
 	DeleteUser(id string) error
 	GetUsers(limit, offset int) ([]*entity.User, error)
-	GetUsersByGroup(groupID string) ([]*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
+	GetUsersByRoom(roomID string) ([]*entity.User, error)
+}
+
+type RoomRepository interface {
+	CreateRoom(room *entity.Room) (*entity.Room, error)
+	GetRoomByID(roomID string) (*entity.Room, error)
+	GetRoomsByUserID(userID string) ([]*entity.Room, error)
+	UpdateRoom(room *entity.Room) (*entity.Room, error)
+	DeleteRoom(roomID string) error
+	AddUserToRoom(userID, roomID string) error
+	FindRoomWithAvailableSlots() (*entity.Room, error)
 }
 type MessageRepository interface {
 	CreateMessage(message *entity.Message) error
@@ -20,14 +30,7 @@ type MessageRepository interface {
 	GetMessagesByUserID(userID string) ([]*entity.Message, error)
 	UpdateMessage(message *entity.Message) error
 	DeleteMessage(id string) error
-	GetMessagesByGroup(groupID string, limit, offset int) ([]*entity.Message, error)
-}
-type ChatGroupRepository interface {
-	CreateGroup(group *entity.ChatGroup) (*entity.ChatGroup, error)
-	GetGroupByID(id string) (*entity.ChatGroup, error)
-	GetGroupByUserID(userID string) ([]*entity.ChatGroup, error)
-	AddUserToGroup(userID, groupID string) error
-	FindGroupWithAvailableSlots() (*entity.ChatGroup, error)
+	GetMessagesByRoom(roomID string, limit, offset int) ([]*entity.Message, error)
 }
 
 type RoomUserStore interface {

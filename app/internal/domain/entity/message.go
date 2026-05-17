@@ -4,40 +4,23 @@ import (
 	"errors"
 	"strings"
 	"time"
-	"unicode/utf8"
-
-	"github.com/google/uuid"
 )
 
+type UserID string
+type RoomID string
 type MessageID string
 
-type SenderType string
-
-const (
-	SenderTypeUser   SenderType = "USER"
-	SenderTypeAI     SenderType = "AI"
-	SenderTypeSystem SenderType = "SYSTEM"
-)
-
-type MessageStatus string
-
-const (
-	MessagePendingModeration MessageStatus = "PENDING_MODERATION"
-	MessageVisible           MessageStatus = "VISIBLE"
-	MessageHidden            MessageStatus = "HIDDEN"
-	MessageDeleted           MessageStatus = "DELETED"
-)
-
-type MessageKind string
-
-const (
-	MessageKindText    MessageKind = "TEXT"
-	MessageKindImage   MessageKind = "IMAGE"
-	MessageKindSticker MessageKind = "STICKER"
-	MessageKindSystem  MessageKind = "SYSTEM"
-)
-
 type Message struct {
+	ID              MessageID `json:"id"`
+	ClientMessageID *string   `json:"client_message_id,omitempty"`
+	SenderID        UserID    `json:"user_id"`
+	RoomID          RoomID    `json:"room_id"`
+	Text            *string   `json:"text,omitempty"`
+	MediaURL        *string   `json:"media_url,omitempty"`
+	StickerID       *string   `json:"sticker_id,omitempty"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	DeletedAt       time.Time `json:"deleted_at"`
 	ID     MessageID
 	RoomID RoomID
 
@@ -62,6 +45,8 @@ type Message struct {
 	DeletedAt *time.Time
 }
 
+func NewMessage(userID, roomID, text string) (*Message, error) {
+	if len(text) == 0 {
 func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) (*Message, error) {
 	text = strings.TrimSpace(text)
 	if roomID == "" {
@@ -77,15 +62,27 @@ func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) 
 		return nil, errors.New("text is too long")
 	}
 
+	now := time.Now()
 	return &Message{
-		ID:         MessageID(uuid.NewString()),
-		RoomID:     roomID,
-		SenderID:   senderID,
-		SenderType: SenderTypeUser,
-		Kind:       MessageKindText,
-		Text:       &text,
-		Status:     MessageVisible,
-		CreatedAt:  now,
-		UpdatedAt:  now,
+		ID:              MessageID(utils.GenerateUUID()),
+		ClientMessageID: utils.StringPtr(utils.GenerateUUID()),
+		SenderID:        UserID(userID),
+		RoomID:          RoomID(roomID),
+		Text:            &text,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}, nil
+}
+
+func (m *Message) CanSendMessage(senderID string) bool {
+	if string(m.SenderID) != senderID {
+		return false
+	}
+	if m.Text == nil && m.MediaURL == nil && m.StickerID == nil {
+		return false
+	}
+	if m.Text != nil && len(*m.Text) > 1000 {
+		return false
+	}
+	return true
 }
