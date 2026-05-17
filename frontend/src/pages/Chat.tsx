@@ -1,13 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { chatApi, type ChatMessage } from "@/api/client";
-import { addRoomHistory, findRoomHistory } from "@/utils/rooms";
+import { type ChatMessage, chatApi } from "@/api/client";
 import { useToast } from "@/components/Toast";
+import { addRoomHistory, findRoomHistory } from "@/utils/rooms";
 
 const DEFAULT_POLL_INTERVAL = Number(
-  import.meta.env.VITE_POLL_INTERVAL_MS || 5000
+  import.meta.env.VITE_POLL_INTERVAL_MS || 5000,
 );
 const POLL_OPTIONS = [3000, 5000, 10000];
+
+const getErrorMessage = (err: unknown, fallback: string) =>
+  err instanceof Error ? err.message : fallback;
 
 const Chat: React.FC = () => {
   const navigate = useNavigate();
@@ -62,14 +66,17 @@ const Chat: React.FC = () => {
       try {
         const res = await chatApi.getMessages(targetRoomId);
         setMessages(res);
-      } catch (err: any) {
-        toast.push(err.message || "メッセージ取得に失敗しました", "error");
+      } catch (err: unknown) {
+        toast.push(
+          getErrorMessage(err, "メッセージ取得に失敗しました"),
+          "error",
+        );
       } finally {
         setLoading(false);
         inFlightRef.current = false;
       }
     },
-    [toast]
+    [toast],
   );
 
   const handleMatch = async () => {
@@ -86,8 +93,8 @@ const Chat: React.FC = () => {
       });
       await loadMessages(res.roomId);
       toast.push("ルームを作成しました", "success");
-    } catch (err: any) {
-      toast.push(err.message || "マッチに失敗しました", "error");
+    } catch (err: unknown) {
+      toast.push(getErrorMessage(err, "マッチに失敗しました"), "error");
     } finally {
       setLoading(false);
     }
@@ -111,7 +118,7 @@ const Chat: React.FC = () => {
         text: trimmed,
       });
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           messageId: res.messageId,
@@ -123,8 +130,8 @@ const Chat: React.FC = () => {
       setText("");
       setUnreadCount(0);
       requestAnimationFrame(scrollToBottom);
-    } catch (err: any) {
-      toast.push(err.message || "送信に失敗しました", "error");
+    } catch (err: unknown) {
+      toast.push(getErrorMessage(err, "送信に失敗しました"), "error");
     } finally {
       setSending(false);
     }
@@ -159,7 +166,7 @@ const Chat: React.FC = () => {
     if (messages.length > lastCountRef.current) {
       const delta = messages.length - lastCountRef.current;
       if (!isBottom) {
-        setUnreadCount(prev => prev + delta);
+        setUnreadCount((prev) => prev + delta);
       } else {
         requestAnimationFrame(scrollToBottom);
         setUnreadCount(0);
@@ -238,11 +245,9 @@ const Chat: React.FC = () => {
               受信を更新
             </button>
             <div className="rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-xs text-[#6a5f52]">
-              <div className="mb-2 font-semibold text-[#2b2620]">
-                更新間隔
-              </div>
+              <div className="mb-2 font-semibold text-[#2b2620]">更新間隔</div>
               <div className="flex items-center gap-2">
-                {POLL_OPTIONS.map(option => (
+                {POLL_OPTIONS.map((option) => (
                   <button
                     key={option}
                     type="button"
@@ -289,7 +294,7 @@ const Chat: React.FC = () => {
                 まだメッセージがありません。
               </div>
             )}
-            {messages.map(msg => {
+            {messages.map((msg) => {
               const isOwn = msg.senderId === userId;
               return (
                 <div

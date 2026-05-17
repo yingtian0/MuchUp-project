@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "@/api/client";
 import { useToast } from "@/components/Toast";
+
+const getErrorMessage = (err: unknown, fallback: string) =>
+  err instanceof Error ? err.message : fallback;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -21,8 +25,8 @@ const Login: React.FC = () => {
       localStorage.setItem("username", res.username);
       toast.push("ログインしました", "success");
       navigate("/chat");
-    } catch (err: any) {
-      toast.push(err.message || "ログインに失敗しました", "error");
+    } catch (err: unknown) {
+      toast.push(getErrorMessage(err, "ログインに失敗しました"), "error");
     } finally {
       setLoading(false);
     }
@@ -42,8 +46,7 @@ const Login: React.FC = () => {
               ひらけるチャットルーム。
             </h1>
             <p className="mt-4 text-base text-[#6a5f52]">
-              マッチからメッセージまで、最短で。
-              今日はどんな会話が生まれる？
+              マッチからメッセージまで、最短で。 今日はどんな会話が生まれる？
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm text-[#6a5f52]">

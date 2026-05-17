@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/components/Toast";
 import {
   clearRoomHistory,
   getRoomHistory,
-  removeRoomHistory,
   type RoomHistoryItem,
+  removeRoomHistory,
 } from "@/utils/rooms";
-import { useToast } from "@/components/Toast";
 
 const Rooms: React.FC = () => {
   const toast = useToast();
   const [history, setHistory] = useState<RoomHistoryItem[]>(() =>
-    getRoomHistory()
+    getRoomHistory(),
   );
 
   const handleClear = () => {
@@ -59,7 +60,7 @@ const Rooms: React.FC = () => {
               まだルーム履歴がありません。
             </div>
           )}
-          {history.map(item => (
+          {history.map((item) => (
             <div
               key={item.roomId}
               className="flex flex-col gap-3 rounded-2xl border border-[#eadfce] bg-white px-6 py-4 shadow-sm md:flex-row md:items-center md:justify-between"

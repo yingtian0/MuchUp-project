@@ -39,6 +39,17 @@ export interface MatchRoomResponse {
   roomId: string;
 }
 
+interface ApiErrorBody {
+  message?: string;
+}
+
+interface ChatMessageResponse {
+  message_id: string;
+  sender_id: string;
+  text: string;
+  created_at: number;
+}
+
 class BaseApi {
   protected basePath: string;
 
@@ -49,15 +60,15 @@ class BaseApi {
   protected async request<T>(
     path: string,
     method: string,
-    body?: any
+    body?: unknown,
   ): Promise<T> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
 
     const token = localStorage.getItem("session_token");
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const response = await fetch(`${this.basePath}${path}`, {
@@ -70,7 +81,9 @@ class BaseApi {
       if (response.status === 401 || response.status === 403) {
         throw new Error("認証エラーが発生しました。");
       }
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = (await response
+        .json()
+        .catch(() => ({}))) as ApiErrorBody;
       throw new Error(errorData.message || `API Error: ${response.status}`);
     }
 
@@ -99,7 +112,7 @@ class ChatApi extends BaseApi {
     const res = await this.request<{ owner_id: string; room_id: string }>(
       "/v1/chat/match",
       "POST",
-      {}
+      {},
     );
 
     return {
@@ -109,12 +122,12 @@ class ChatApi extends BaseApi {
   }
 
   async getMessages(roomId: string): Promise<ChatMessage[]> {
-    const res = await this.request<{ message: any[] }>(
+    const res = await this.request<{ message: ChatMessageResponse[] }>(
       `/v1/chat/rooms/${roomId}/messages`,
-      "GET"
+      "GET",
     );
 
-    return (res.message || []).map(item => ({
+    return (res.message || []).map((item) => ({
       messageId: item.message_id,
       senderId: item.sender_id,
       text: item.text,

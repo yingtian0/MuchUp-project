@@ -23,18 +23,18 @@ export const saveRoomHistory = (history: RoomHistoryItem[]) => {
 
 export const addRoomHistory = (item: RoomHistoryItem) => {
   const history = getRoomHistory();
-  const filtered = history.filter(entry => entry.roomId !== item.roomId);
+  const filtered = history.filter((entry) => entry.roomId !== item.roomId);
   const next = [item, ...filtered].slice(0, 20);
   saveRoomHistory(next);
 };
 
 export const findRoomHistory = (roomId: string) => {
-  return getRoomHistory().find(entry => entry.roomId === roomId) || null;
+  return getRoomHistory().find((entry) => entry.roomId === roomId) || null;
 };
 
 export const removeRoomHistory = (roomId: string) => {
   const history = getRoomHistory();
-  const next = history.filter(entry => entry.roomId !== roomId);
+  const next = history.filter((entry) => entry.roomId !== roomId);
   saveRoomHistory(next);
   return next;
 };

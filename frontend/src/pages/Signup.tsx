@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "@/api/client";
 import { useToast } from "@/components/Toast";
+
+const getErrorMessage = (err: unknown, fallback: string) =>
+  err instanceof Error ? err.message : fallback;
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +26,8 @@ const Signup: React.FC = () => {
       localStorage.setItem("username", res.username);
       toast.push("登録が完了しました", "success");
       navigate("/chat");
-    } catch (err: any) {
-      toast.push(err.message || "登録に失敗しました", "error");
+    } catch (err: unknown) {
+      toast.push(getErrorMessage(err, "登録に失敗しました"), "error");
     } finally {
       setLoading(false);
     }
@@ -100,8 +104,7 @@ const Signup: React.FC = () => {
               すぐにつながる。
             </h1>
             <p className="mt-4 text-base text-[#6a5f52]">
-              マッチ後はルームIDを自動取得。
-              すぐに会話をスタートできます。
+              マッチ後はルームIDを自動取得。 すぐに会話をスタートできます。
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm text-[#6a5f52]">
