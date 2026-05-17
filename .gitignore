@@ -3,6 +3,7 @@ gen/
 go.work
 
 .env
+.venv/
 .direnv/
 .tools/bin/
 .cache/
