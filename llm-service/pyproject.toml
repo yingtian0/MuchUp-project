@@ -7,3 +7,24 @@ dependencies = [
   "grpcio>=1.66,<2.0",
   "protobuf>=5.27,<7.0",
 ]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+indent-width = 4
