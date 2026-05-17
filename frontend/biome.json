@@ -16,6 +16,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "style": {
+        "useNodejsImportProtocol": "off"
+      },
       "suspicious": {
         "noUnknownAtRules": {
           "level": "error",
