@@ -3,9 +3,11 @@ package authzservice
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
+// HandlerFunc adapts a context-aware handler to http.Handler.
 type HandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 
 func (h HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +27,7 @@ func writeJSON(w http.ResponseWriter, status int, payload any) error {
 	return json.NewEncoder(w).Encode(payload)
 }
 
+// HealthHandler returns a simple 200 response when the request context is active.
 func HealthHandler(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -34,11 +37,15 @@ func HealthHandler(ctx context.Context, w http.ResponseWriter, _ *http.Request) 
 	return nil
 }
 
+// LoginHandler authenticates an existing user and returns a JWT.
 func LoginHandler(store *UserStore) HandlerFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+		defer func() {
+			_ = r.Body.Close()
+		}()
 
 		var req LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -67,11 +74,15 @@ func LoginHandler(store *UserStore) HandlerFunc {
 	}
 }
 
+// SignupHandler creates a user and returns a JWT for the new account.
 func SignupHandler(store *UserStore) HandlerFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+		defer func() {
+			_ = r.Body.Close()
+		}()
 
 		var req SignupRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -84,7 +95,7 @@ func SignupHandler(store *UserStore) HandlerFunc {
 
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
-			if err == ErrUserExists {
+			if errors.Is(err, ErrUserExists) {
 				return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
 			}
 			return err
