@@ -27,6 +27,7 @@ func writeJSON(w http.ResponseWriter, status int, payload any) error {
 	return json.NewEncoder(w).Encode(payload)
 }
 
+// HealthHandler returns a simple 200 response when the request context is active.
 func HealthHandler(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -95,12 +96,11 @@ func SignupHandler(store *UserStore) HandlerFunc {
 
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
-			if err == ErrUserExists {
-				if errors.Is(err, ErrUserExists) {
-					return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
-				}
-
-				return err
+			if errors.Is(err, ErrUserExists) {
+				return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
+			if errors.Is(err, ErrUserExists) {
+				writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
+				return nil
 			}
 
 			token, err := IssueToken(user.ID, user.Username)

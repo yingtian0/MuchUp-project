@@ -14,6 +14,10 @@ var signingKey = mustLoadSigningKey()
 var tokenTTL = 1 * time.Hour
 
 func init() {
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		secretKey = []byte(v)
+	}
+
 	if v := os.Getenv("JWT_TTL"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			tokenTTL = d
@@ -56,7 +60,8 @@ func IssueToken(userID, username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := token.SignedString(signingKey)
+
+	signed, err := token.SignedString(secretKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
