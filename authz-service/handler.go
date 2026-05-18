@@ -19,13 +19,13 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-func writeJSON(w http.ResponseWriter, status int, payload any) {
+func writeJSON(w http.ResponseWriter, status int, payload any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
+	return json.NewEncoder(w).Encode(payload)
 }
 
-func HealthHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func HealthHandler(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -42,19 +42,16 @@ func LoginHandler(store *UserStore) HandlerFunc {
 
 		var req LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
-			return nil
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
 		}
 
 		if req.Email == "" || req.Password == "" {
-			writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email and password are required"})
-			return nil
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email and password are required"})
 		}
 
-		user, err := store.Authenticate(req.Email, req.Password)
-		if err != nil {
-			writeJSON(w, http.StatusUnauthorized, errorResponse{Code: 401, Message: err.Error()})
-			return nil
+		user, authErr := store.Authenticate(req.Email, req.Password)
+		if authErr != nil {
+			return writeJSON(w, http.StatusUnauthorized, errorResponse{Code: 401, Message: authErr.Error()})
 		}
 
 		token, err := IssueToken(user.ID, user.Username)
@@ -62,12 +59,11 @@ func LoginHandler(store *UserStore) HandlerFunc {
 			return err
 		}
 
-		writeJSON(w, http.StatusOK, AuthResponse{
+		return writeJSON(w, http.StatusOK, AuthResponse{
 			Token:    token,
 			UserID:   user.ID,
 			Username: user.Username,
 		})
-		return nil
 	}
 }
 
@@ -79,20 +75,17 @@ func SignupHandler(store *UserStore) HandlerFunc {
 
 		var req SignupRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
-			return nil
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
 		}
 
 		if req.Email == "" || req.Username == "" || req.Password == "" {
-			writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email, username, and password are required"})
-			return nil
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email, username, and password are required"})
 		}
 
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
 			if err == ErrUserExists {
-				writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
-				return nil
+				return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
 			}
 			return err
 		}
@@ -102,11 +95,10 @@ func SignupHandler(store *UserStore) HandlerFunc {
 			return err
 		}
 
-		writeJSON(w, http.StatusOK, AuthResponse{
+		return writeJSON(w, http.StatusOK, AuthResponse{
 			Token:    token,
 			UserID:   user.ID,
 			Username: user.Username,
 		})
-		return nil
 	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	authzservice "muchup.com/authz"
 )
@@ -16,8 +17,9 @@ func main() {
 	mux.Handle("/healthz", authzservice.HandlerFunc(authzservice.HealthHandler))
 
 	server := &http.Server{
-		Addr:    ":8099",
-		Handler: mux,
+		Addr:              ":8099",
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 	log.Fatal(server.ListenAndServe())
 }

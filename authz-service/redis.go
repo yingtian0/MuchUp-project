@@ -3,7 +3,6 @@ package authzservice
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,7 +12,6 @@ import (
 
 var (
 	ctx = context.Background()
-	rdb *redis.Client
 )
 
 var unlockScript = redis.NewScript(`
@@ -23,14 +21,6 @@ else
     return 0
 end
 `)
-
-func InitRedis() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"),
-		Password: "",
-		DB:       0,
-	})
-}
 
 func LockProcess(client *redis.Client, key string, ttl time.Duration) (string, bool, error) {
 
