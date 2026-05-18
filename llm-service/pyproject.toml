@@ -1,0 +1,36 @@
+[project]
+name = "muchup-llm-service"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "Django>=5.1,<6.0",
+  "grpcio>=1.66,<2.0",
+  "protobuf>=5.27,<7.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-django>=4.9",
+  "ruff>=0.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "llm_service.settings"
+python_files = ["test_*.py"]

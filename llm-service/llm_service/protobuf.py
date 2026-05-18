@@ -34,7 +34,12 @@ def _build_messages():
         ("model", 6, descriptor_pb2.FieldDescriptorProto.TYPE_STRING, ""),
         ("temperature", 7, descriptor_pb2.FieldDescriptorProto.TYPE_FLOAT, ""),
         ("max_tokens", 8, descriptor_pb2.FieldDescriptorProto.TYPE_INT32, ""),
-        ("metadata", 9, descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE, ".llm.v1.GenerateReplyRequest.MetadataEntry"),
+        (
+            "metadata",
+            9,
+            descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+            ".llm.v1.GenerateReplyRequest.MetadataEntry",
+        ),
     ]
     metadata_entry = generate_reply_request.nested_type.add()
     metadata_entry.name = "MetadataEntry"
@@ -101,10 +106,18 @@ def _build_messages():
     pool = descriptor_pool.DescriptorPool()
     pool.Add(file_proto)
     return {
-        "ContextMessage": message_factory.GetMessageClass(pool.FindMessageTypeByName("llm.v1.ContextMessage")),
-        "GenerateReplyRequest": message_factory.GetMessageClass(pool.FindMessageTypeByName("llm.v1.GenerateReplyRequest")),
-        "TokenUsage": message_factory.GetMessageClass(pool.FindMessageTypeByName("llm.v1.TokenUsage")),
-        "GenerateReplyResponse": message_factory.GetMessageClass(pool.FindMessageTypeByName("llm.v1.GenerateReplyResponse")),
+        "ContextMessage": message_factory.GetMessageClass(
+            pool.FindMessageTypeByName("llm.v1.ContextMessage")
+        ),
+        "GenerateReplyRequest": message_factory.GetMessageClass(
+            pool.FindMessageTypeByName("llm.v1.GenerateReplyRequest")
+        ),
+        "TokenUsage": message_factory.GetMessageClass(
+            pool.FindMessageTypeByName("llm.v1.TokenUsage")
+        ),
+        "GenerateReplyResponse": message_factory.GetMessageClass(
+            pool.FindMessageTypeByName("llm.v1.GenerateReplyResponse")
+        ),
     }
 
 

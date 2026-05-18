@@ -2,7 +2,7 @@
 
 このリポジトリの開発環境は Nix flakes と direnv を前提にしています。
 
-`flake.nix` に Go、Bun、Python、Buf、Protocol Buffers などの開発ツールを定義しているため、Nix と direnv を用意するとリポジトリごとに同じ開発環境を再現できます。
+`flake.nix` に Go、Bun、Python、uv、Buf、Protocol Buffers などの開発ツールを定義しているため、Nix と direnv を用意するとリポジトリごとに同じ開発環境を再現できます。
 
 ## 1. Nix をインストールする
 
@@ -70,6 +70,7 @@ direnv allow
 go version
 bun --version
 python --version
+uv --version
 buf --version
 ```
 
@@ -77,6 +78,14 @@ direnv を使わずに一時的に開発環境へ入る場合は、次のコマ�
 
 ```sh
 nix develop
+```
+
+Python 依存は `llm-service/pyproject.toml` を source of truth として uv で管理します。
+
+```sh
+cd llm-service
+uv sync
+uv run python main.py
 ```
 
 ## トラブルシューティング
