@@ -16,6 +16,7 @@ type messageUsecase struct {
 	messageStream repository.MessageStreamStore
 }
 
+// TODO: メッセージ関連依存の初期化をこのコンストラクタに集約していく
 func NewMessageUsecase(
 	messageRepo repository.MessageRepository,
 	userRepo repository.UserRepository,

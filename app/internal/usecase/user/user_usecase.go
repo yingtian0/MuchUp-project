@@ -11,6 +11,7 @@ type userUsecase struct {
 	userRepo repository.UserRepository
 }
 
+// TODO: 他依存の注入が増える想定のため、ユースケース初期化をここに集約する
 func NewUserUsecase(
 	userRepo repository.UserRepository,
 ) usecase.UserUsecase {
@@ -62,14 +63,17 @@ func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error)
 	return u.userRepo.GetUsers(limit, offset)
 }
 
+// TODO: 認証基盤の実装に合わせてログイン処理を実装する
 func (u *userUsecase) Login(email, password string) (string, error) {
 	return "", errors.New("not implemented")
 }
 
+// TODO: ルーム所属管理の実装に合わせて参加処理を実装する
 func (u *userUsecase) JoinRoom(userID, roomID string) error {
 	return errors.New("not implemented")
 }
 
+// TODO: ルーム所属管理の実装に合わせて退出処理を実装する
 func (u *userUsecase) LeaveRoom(userID, roomID string) error {
 	return errors.New("not implemented")
 }
