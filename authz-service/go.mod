@@ -1,4 +1,4 @@
-module muchup/authz
+module muchup.com/authz
 
 go 1.25.1
 

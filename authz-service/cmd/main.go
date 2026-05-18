@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	authzservice "muchup/authz"
+	authzservice "muchup.com/authz"
 )
 
 func main() {
