@@ -6,7 +6,8 @@ type RoomType string
 type RoomStatus string
 
 const (
-	RoomTypeChat RoomType = "chat"
+	RoomTypeClosed RoomType = "Closed"
+	RoomTypeRandom RoomType = "random"
 
 	RoomWaiting RoomStatus = "waiting"
 	RoomActive  RoomStatus = "active"
@@ -14,12 +15,13 @@ const (
 )
 
 type Room struct {
-	ID        RoomID                 `json:"id"`
-	Type      RoomType               `json:"type"`
-	Status    RoomStatus             `json:"status"`
-	Capacity  int                    `json:"capacity"`
-	Members   map[UserID]*RoomMember `json:"members"`
-	CreatedBy UserID                 `json:"created_by"`
-	CreatedAt time.Time              `json:"created_at"`
-	UpdatedAt time.Time              `json:"updated_at"`
+	ID                 RoomID
+	Type               RoomType
+	Status             RoomStatus
+	Capacity           int
+	Members            map[UserID]*RoomMember
+	CreatedBy          *UserID
+	ActivatedAt        *time.Time
+	LastMessageAt      *time.Time
+	LastAIIntervenedAt *time.Time
 }

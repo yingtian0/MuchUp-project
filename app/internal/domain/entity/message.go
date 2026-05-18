@@ -12,6 +12,7 @@ type RoomID string
 type MessageID string
 type SenderType string
 type MessageKind string
+type AIMessageKind string
 type MessageStatus string
 
 const (
@@ -26,6 +27,14 @@ const (
 )
 
 const (
+	AIMessageKindIcebreakInitialTopic  AIMessageKind = "ICEBREAK_INITIAL_TOPIC"
+	AIMessageKindIcebreakFollowUp      AIMessageKind = "ICEBREAK_FOLLOW_UP"
+	AIMessageKindIcebreakSilencePrompt AIMessageKind = "ICEBREAK_SILENCE_PROMPT"
+	AIMessageKindIcebreakMission       AIMessageKind = "ICEBREAK_MISSION"
+	AIMessageKindIcebreakSummary       AIMessageKind = "ICEBREAK_SUMMARY"
+)
+
+const (
 	MessageStatusPending MessageStatus = "PENDING"
 	MessageStatusSent    MessageStatus = "SENT"
 	MessageStatusFailed  MessageStatus = "FAILED"
@@ -33,20 +42,21 @@ const (
 )
 
 type Message struct {
-	ID              MessageID `json:"id"`
-	ClientMessageID *string   `json:"client_message_id,omitempty"`
-	SenderID        UserID    `json:"user_id"`
-	RoomID          RoomID    `json:"room_id"`
-	Text            *string   `json:"text,omitempty"`
-	MediaURL        *string   `json:"media_url,omitempty"`
-	StickerID       *string   `json:"sticker_id,omitempty"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	DeletedAt       time.Time `json:"deleted_at"`
+	ID              MessageID
+	ClientMessageID *string
+	SenderID        UserID
+	RoomID          RoomID
+	Text            *string
+	MediaURL        *string
+	StickerID       *string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DeletedAt       time.Time
 
 	SenderType SenderType
 
-	Kind MessageKind
+	Kind   MessageKind
+	AIKind *AIMessageKind
 
 	Status MessageStatus
 

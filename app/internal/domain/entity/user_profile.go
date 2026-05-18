@@ -32,6 +32,9 @@ type UserProfile struct {
 	PhoneVerified bool
 	AuthMethod    PrimaryAuthMethod
 	AvatarURL     *string
+	Interests     []string
+	Hobbies       []string
+	FavoriteTags  []string
 	UsagePurpose  string
 	IsActive      bool
 	IsBanned      bool
