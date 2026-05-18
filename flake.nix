@@ -17,14 +17,6 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        python = pkgs.python312.withPackages (
-          ps: with ps; [
-            django
-            grpcio
-            protobuf
-          ]
-        );
-
         go = pkgs.go_1_26;
       in
       {
@@ -37,7 +29,8 @@
 
             bun
 
-            python
+            python312
+            uv
 
             buf
             protobuf
@@ -58,6 +51,7 @@
             echo "  go:     $(go version)"
             echo "  bun:    $(bun --version)"
             echo "  python: $(python --version)"
+            echo "  uv:     $(uv --version)"
             echo "  buf:    $(buf --version)"
           '';
         };

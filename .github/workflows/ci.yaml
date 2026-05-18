@@ -45,5 +45,38 @@ jobs:
       with:
         working-directory: ${{ matrix.service }}
 
-# goのgolangci-lintの設定を書きたい
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: llm-service
 
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        working-directory: llm-service
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: llm-service/.python-version
+
+    - name: Install dependencies
+      run: uv sync --locked --dev
+
+    - name: Lint
+      run: uv run ruff check .
+
+    - name: Format
+      run: uv run ruff format --check .
+
+    - name: Test
+      # pytest はテストが1件も収集されないと終了コード5で失敗する。
+      # llm-service に実テストを追加したら、この fallback を外して0件収集をCI失敗にする。
+      run: uv run pytest || [ $? -eq 5 ]
+      env:
+        PYTHONPATH: .

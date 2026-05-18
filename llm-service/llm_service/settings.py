@@ -1,6 +1,5 @@
 import os
 
-
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-llm-service-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = ["*"]
