@@ -34,6 +34,7 @@ func HealthHandler(ctx context.Context, w http.ResponseWriter, _ *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusOK)
+
 	return nil
 }
 
@@ -98,6 +99,7 @@ func SignupHandler(store *UserStore) HandlerFunc {
 			if errors.Is(err, ErrUserExists) {
 				return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
 			}
+
 			return err
 		}
 

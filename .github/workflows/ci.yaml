@@ -1,0 +1,104 @@
+name: ci-check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - app
+          - authz-service
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+   
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: ${{ matrix.service }}/go.mod
+
+    - name: Check go mod tidy
+      run: |
+        go mod tidy
+        git diff --exit-code go.mod go.sum
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        working-directory: ${{ matrix.service }}
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Lint
+      run: bun run lint
+
+    - name: Format
+      run: bun run format:check
+
+    - name: Build
+      run: bun run build
+      
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: llm-service
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        working-directory: llm-service
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: llm-service/.python-version
+
+    - name: Install dependencies
+      run: uv sync --locked --dev
+
+    - name: Lint
+      run: uv run ruff check .
+
+    - name: Format
+      run: uv run ruff format --check .
+
+    - name: Test
+      # pytest はテストが1件も収集されないと終了コード5で失敗する。
+      # llm-service に実テストを追加したら、この fallback を外して0件収集をCI失敗にする。
+      run: uv run pytest || [ $? -eq 5 ]
+      env:
+        PYTHONPATH: .
