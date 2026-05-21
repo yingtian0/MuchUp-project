@@ -3,6 +3,7 @@ package authzservice
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -31,6 +32,7 @@ func HealthHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusOK)
+
 	return nil
 }
 
@@ -67,6 +69,7 @@ func LoginHandler(store *UserStore) HandlerFunc {
 			UserID:   user.ID,
 			Username: user.Username,
 		})
+
 		return nil
 	}
 }
@@ -90,10 +93,11 @@ func SignupHandler(store *UserStore) HandlerFunc {
 
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
-			if err == ErrUserExists {
+			if errors.Is(err, ErrUserExists) {
 				writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
 				return nil
 			}
+
 			return err
 		}
 
@@ -107,6 +111,7 @@ func SignupHandler(store *UserStore) HandlerFunc {
 			UserID:   user.ID,
 			Username: user.Username,
 		})
+
 		return nil
 	}
 }

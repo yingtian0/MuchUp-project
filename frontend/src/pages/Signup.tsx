@@ -1,14 +1,18 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "@/api/client";
-import { useToast } from "@/components/Toast";
+import type React from 'react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { authApi } from '@/api/client';
+import { useToast } from '@/components/Toast';
+
+const getErrorMessage = (err: unknown, fallback: string) =>
+  err instanceof Error ? err.message : fallback;
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,13 +21,13 @@ const Signup: React.FC = () => {
 
     try {
       const res = await authApi.signup({ username, email, password });
-      localStorage.setItem("session_token", res.token);
-      localStorage.setItem("user_id", res.userId);
-      localStorage.setItem("username", res.username);
-      toast.push("登録が完了しました", "success");
-      navigate("/chat");
-    } catch (err: any) {
-      toast.push(err.message || "登録に失敗しました", "error");
+      localStorage.setItem('session_token', res.token);
+      localStorage.setItem('user_id', res.userId);
+      localStorage.setItem('username', res.username);
+      toast.push('登録が完了しました', 'success');
+      navigate('/chat');
+    } catch (err: unknown) {
+      toast.push(getErrorMessage(err, '登録に失敗しました'), 'error');
     } finally {
       setLoading(false);
     }
@@ -34,9 +38,7 @@ const Signup: React.FC = () => {
       <div className="w-full max-w-5xl grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-3xl p-8 md:p-10 card-surface border border-[#eadfce]">
           <h2 className="text-3xl font-display">新規登録</h2>
-          <p className="mt-2 text-sm text-[#6a5f52]">
-            最初の一言が届く準備を整えます。
-          </p>
+          <p className="mt-2 text-sm text-[#6a5f52]">最初の一言が届く準備を整えます。</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <label className="block text-sm font-medium text-[#5a5045]">
@@ -74,16 +76,13 @@ const Signup: React.FC = () => {
               disabled={loading}
               className="w-full rounded-xl bg-[#2b2620] py-3 text-sm font-semibold text-white transition hover:bg-[#1e1a16] disabled:opacity-60"
             >
-              {loading ? "登録中..." : "登録する"}
+              {loading ? '登録中...' : '登録する'}
             </button>
           </form>
 
           <div className="mt-6 flex items-center justify-between text-sm text-[#6a5f52]">
             <span>すでにアカウントをお持ちですか？</span>
-            <Link
-              to="/login"
-              className="font-semibold text-[#b04b2f] hover:underline"
-            >
+            <Link to="/login" className="font-semibold text-[#b04b2f] hover:underline">
               ログインへ
             </Link>
           </div>
@@ -100,8 +99,7 @@ const Signup: React.FC = () => {
               すぐにつながる。
             </h1>
             <p className="mt-4 text-base text-[#6a5f52]">
-              マッチ後はルームIDを自動取得。
-              すぐに会話をスタートできます。
+              マッチ後はルームIDを自動取得。 すぐに会話をスタートできます。
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm text-[#6a5f52]">

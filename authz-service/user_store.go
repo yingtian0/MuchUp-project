@@ -48,6 +48,7 @@ func (s *UserStore) Create(username, email, password string) (User, error) {
 	}
 
 	s.byMail[email] = user
+
 	return user, nil
 }
 
@@ -55,6 +56,7 @@ func (s *UserStore) Authenticate(email, password string) (User, error) {
 	s.mu.RLock()
 	user, ok := s.byMail[email]
 	s.mu.RUnlock()
+
 	if !ok {
 		return User{}, ErrInvalidCredentials
 	}

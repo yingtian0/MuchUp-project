@@ -1,15 +1,15 @@
-import React from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import type React from 'react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const AppShell: React.FC = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem("username");
+  const username = localStorage.getItem('username');
 
   const handleLogout = () => {
-    localStorage.removeItem("session_token");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("username");
-    navigate("/login");
+    localStorage.removeItem('session_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('username');
+    navigate('/login');
   };
 
   return (
@@ -22,31 +22,25 @@ const AppShell: React.FC = () => {
           <nav className="flex items-center gap-4 text-sm font-medium text-[#6a5f52]">
             <NavLink
               to="/chat"
-              className={({ isActive }) =>
-                isActive ? "text-[#2b2620]" : "hover:text-[#2b2620]"
-              }
+              className={({ isActive }) => (isActive ? 'text-[#2b2620]' : 'hover:text-[#2b2620]')}
             >
               チャット
             </NavLink>
             <NavLink
               to="/rooms"
-              className={({ isActive }) =>
-                isActive ? "text-[#2b2620]" : "hover:text-[#2b2620]"
-              }
+              className={({ isActive }) => (isActive ? 'text-[#2b2620]' : 'hover:text-[#2b2620]')}
             >
               履歴
             </NavLink>
             <NavLink
               to="/profile"
-              className={({ isActive }) =>
-                isActive ? "text-[#2b2620]" : "hover:text-[#2b2620]"
-              }
+              className={({ isActive }) => (isActive ? 'text-[#2b2620]' : 'hover:text-[#2b2620]')}
             >
               プロフィール
             </NavLink>
           </nav>
           <div className="flex items-center gap-3 text-sm">
-            <span className="text-[#6a5f52]">{username || "Guest"}</span>
+            <span className="text-[#6a5f52]">{username || 'Guest'}</span>
             <button
               type="button"
               onClick={handleLogout}
