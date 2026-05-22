@@ -2,14 +2,14 @@ package entity
 
 import "time"
 
-type IcebreakPromptType string
+type IcebreakAIMessageType string
 
 const (
-	IcebreakPromptInitialTopic    IcebreakPromptType = "INITIAL_TOPIC"
-	IcebreakPromptFollowUp        IcebreakPromptType = "FOLLOW_UP"
-	IcebreakPromptSilenceRecovery IcebreakPromptType = "SILENCE_RECOVERY"
-	IcebreakPromptMission         IcebreakPromptType = "MISSION"
-	IcebreakPromptSummary         IcebreakPromptType = "SUMMARY"
+	IcebreakAIMessageInitialTopic    IcebreakAIMessageType = "INITIAL_TOPIC"
+	IcebreakAIMessageFollowUp        IcebreakAIMessageType = "FOLLOW_UP"
+	IcebreakAIMessageSilenceRecovery IcebreakAIMessageType = "SILENCE_RECOVERY"
+	IcebreakAIMessageMission         IcebreakAIMessageType = "MISSION"
+	IcebreakAIMessageSummary         IcebreakAIMessageType = "SUMMARY"
 )
 
 type IcebreakTriggerType string
@@ -21,11 +21,11 @@ const (
 	IcebreakTriggerManual        IcebreakTriggerType = "MANUAL"
 )
 
-type IcebreakPrompt struct {
+type IcebreakAIMessage struct {
 	ID               string
 	RoomID           RoomID
 	MessageID        *MessageID
-	Type             IcebreakPromptType
+	Type             IcebreakAIMessageType
 	Trigger          IcebreakTriggerType
 	TargetUserID     *UserID
 	SourceMessageIDs []MessageID

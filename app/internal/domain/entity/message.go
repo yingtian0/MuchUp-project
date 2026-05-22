@@ -27,14 +27,6 @@ const (
 )
 
 const (
-	AIMessageKindIcebreakInitialTopic  AIMessageKind = "ICEBREAK_INITIAL_TOPIC"
-	AIMessageKindIcebreakFollowUp      AIMessageKind = "ICEBREAK_FOLLOW_UP"
-	AIMessageKindIcebreakSilencePrompt AIMessageKind = "ICEBREAK_SILENCE_PROMPT"
-	AIMessageKindIcebreakMission       AIMessageKind = "ICEBREAK_MISSION"
-	AIMessageKindIcebreakSummary       AIMessageKind = "ICEBREAK_SUMMARY"
-)
-
-const (
 	MessageStatusPending MessageStatus = "PENDING"
 	MessageStatusSent    MessageStatus = "SENT"
 	MessageStatusFailed  MessageStatus = "FAILED"
@@ -55,8 +47,7 @@ type Message struct {
 
 	SenderType SenderType
 
-	Kind   MessageKind
-	AIKind *AIMessageKind
+	Kind MessageKind
 
 	Status MessageStatus
 
