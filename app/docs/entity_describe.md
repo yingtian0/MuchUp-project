@@ -53,7 +53,7 @@ room は「成立した会話の場」を表し、`MatchingTicket` は「成立�
 
 `Message` はあくまで「会話に流れる 1 件の発言」を表す。ユーザー発言と AI 発言の両方で使うが、Room に表示されるものとしての責務に限定する。
 
-### IcebreakPrompt
+### IcebreakAIMessage 
 
 AI アイスブレイク機能では、AI の発言を単なる `Message` として扱うだけでは不十分である。
 
@@ -67,9 +67,9 @@ AI については、表示される本文そのものに加えて、次の情�
 
 これらは通常のユーザーメッセージには不要な情報であり、`Message` に混ぜると責務が曖昧になる。
 
-そのため、`IcebreakPrompt` は AI が生成した 1 回分の prompt 履歴を表す entity として分離している。
+そのため、`IcebreakAIMessage` は AI が生成した 1 回分の prompt 履歴を表す entity として分離している。
 
-`Message` が「表示される発言」なのに対し、`IcebreakPrompt` は「その発言がどのような意図と文脈で生成されたか」を記録する。
+`Message` が「表示される発言」なのに対し、`IcebreakAIMessage` は「その発言がどのような意図と文脈で生成されたか」を記録する。
 
 ### IcebreakSession
 
@@ -81,7 +81,7 @@ AI アイスブレイクでは、Room ごとに進行状態も持つ必要があ
 - 会話停止時に AI が介入してよいかを判断するための状態
 - 初回話題をすでに提示済みか
 
-これらは個々の `Message` や `IcebreakPrompt` に閉じない、Room 単位の進行管理である。
+これらは個々の `Message` や `IcebreakAIMessage` に閉じない、Room 単位の進行管理である。
 
 そのため、`IcebreakSession` は Room ごとの AI アイスブレイク進行状態を表す entity として分離している。
 
@@ -90,7 +90,7 @@ AI アイスブレイクでは、Room ごとに進行状態も持つ必要があ
 責務は次のように整理する。
 
 - `Message`: Room に表示・配信される発言
-- `IcebreakPrompt`: AI が生成した 1 回分の prompt 履歴
+- `IcebreakAIMessage`: AI が生成した 1 回分の prompt 履歴
 - `IcebreakSession`: Room ごとの AI アイスブレイク進行状態
 
 この分離によって、表示責務、生成履歴責務、進行管理責務が混ざらず、それぞれを独立して変更しやすくなる。
@@ -123,7 +123,7 @@ AI 機能を無効化した room でも不要な状態を持つことになり�
 
 1 回ごとの生成履歴と、Room 全体の進行状態はライフサイクルが異なる。
 
-- `IcebreakPrompt` は生成のたびに増える履歴
+- `IcebreakAIMessage` は生成のたびに増える履歴
 - `IcebreakSession` は Room ごとに更新される状態
 
 この二つを同じ entity にまとめると、履歴と最新状態が混ざって整合性を保ちにくくなる。
@@ -135,7 +135,7 @@ AI 機能を無効化した room でも不要な状態を持つことになり�
 - `UserProfile`: ドメインで利用するユーザー情報
 - `MatchingTicket`: マッチング待ち要求
 - `Message`: Room に流れる発言
-- `IcebreakPrompt`: AI の 1 回ごとの生成履歴
+- `IcebreakAIMessage`: AI の 1 回ごとの生成履歴
 - `IcebreakSession`: Room 単位の AI 進行状態
 
 この構成により、認証、マッチング、会話表示、AI 制御の関心を分離できる。
