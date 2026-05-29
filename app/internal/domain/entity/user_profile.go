@@ -42,7 +42,7 @@ type UserProfile struct {
 	Status UserStatus
 	IsBot  bool
 
-	BlockedUserIDs map[UserID]bool
+	BlockedUserIDs map[UserID]struct{}
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -56,7 +56,11 @@ func (u *UserProfile) CanSendMessageTo(target UserID) bool {
 	if u.Status != UserStatusActive {
 		return false
 	}
-	return !u.BlockedUserIDs[target]
+
+	if _, blocked := u.BlockedUserIDs[target]; blocked {
+		return false
+	}
+	return true
 }
 
 func (u *UserProfile) Block(target UserID) error {
@@ -64,8 +68,8 @@ func (u *UserProfile) Block(target UserID) error {
 		return errors.New("cannot block yourself")
 	}
 	if u.BlockedUserIDs == nil {
-		u.BlockedUserIDs = map[UserID]bool{}
+		u.BlockedUserIDs = map[UserID]struct{}{}
 	}
-	u.BlockedUserIDs[target] = true
+	u.BlockedUserIDs[target] = struct{}{}
 	return nil
 }

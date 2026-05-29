@@ -18,7 +18,7 @@ else
 end
 `)
 
-func LockProcess(client *redis.Client, key string, ttl time.Duration) (string, bool, error) {
+func LockProcess(ctx context.Context, client *redis.Client, key string, ttl time.Duration) (string, bool, error) {
 
 	value := uuid.NewString()
 

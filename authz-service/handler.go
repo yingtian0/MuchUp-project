@@ -50,16 +50,16 @@ func LoginHandler(store *UserStore) HandlerFunc {
 
 		var req LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: http.StatusBadRequest, Message: "invalid request body"})
 		}
 
 		if req.Email == "" || req.Password == "" {
-			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email and password are required"})
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: http.StatusBadRequest, Message: "email and password are required"})
 		}
 
 		user, authErr := store.Authenticate(req.Email, req.Password)
 		if authErr != nil {
-			return writeJSON(w, http.StatusUnauthorized, errorResponse{Code: 401, Message: authErr.Error()})
+			return writeJSON(w, http.StatusUnauthorized, errorResponse{Code: http.StatusUnauthorized, Message: authErr.Error()})
 		}
 
 		token, err := IssueToken(user.ID, user.Username)
@@ -87,20 +87,20 @@ func SignupHandler(store *UserStore) HandlerFunc {
 
 		var req SignupRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "invalid request body"})
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: http.StatusBadRequest, Message: "invalid request body"})
 		}
 
 		if req.Email == "" || req.Username == "" || req.Password == "" {
-			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: 400, Message: "email, username, and password are required"})
+			return writeJSON(w, http.StatusBadRequest, errorResponse{Code: http.StatusBadRequest, Message: "email, username, and password are required"})
 		}
 
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
 			if errors.Is(err, ErrUserExists) {
-				return writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
-			if errors.Is(err, ErrUserExists) {
-				writeJSON(w, http.StatusConflict, errorResponse{Code: 409, Message: err.Error()})
-				return nil
+				if errors.Is(err, ErrUserExists) {
+					writeJSON(w, http.StatusConflict, errorResponse{Code: http.StatusConflict, Message: err.Error()})
+				}
+				return err
 			}
 
 			token, err := IssueToken(user.ID, user.Username)
@@ -113,6 +113,9 @@ func SignupHandler(store *UserStore) HandlerFunc {
 				UserID:   user.ID,
 				Username: user.Username,
 			})
+
 		}
+		return nil
+
 	}
 }
