@@ -70,6 +70,7 @@
             grpcurl
 
             hk
+            pkl
           ];
 
           shellHook = ''
