@@ -27,13 +27,13 @@ func NewMessageStreamStore(client goredis.Cmdable, maxLen int64) *MessageStreamS
 
 func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.Message) (string, error) {
 	args := &goredis.XAddArgs{
-		Stream: streamKey(message.GroupID),
+		Stream: streamKey(message.RoomID),
 		Values: map[string]any{
-			"message_id": message.MessageID,
+			"message_id": message.ClientMessageID,
 			"sender_id":  message.SenderID,
-			"group_id":   message.GroupID,
+			"room_id":    message.RoomID,
 			"text":       derefString(message.Text),
-			"image":      derefString(message.Image),
+			"image":      derefString(message.MediaURL),
 			"created_at": strconv.FormatInt(message.CreatedAt.UnixMilli(), 10),
 			"updated_at": strconv.FormatInt(message.UpdatedAt.UnixMilli(), 10),
 		},
@@ -46,7 +46,7 @@ func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.
 }
 
 func (s *MessageStreamStore) GetRecentMessages(ctx context.Context, roomID string, count int64) ([]*entity.Message, error) {
-	streams, err := s.client.XRevRangeN(ctx, streamKey(roomID), "+", "-", count).Result()
+	streams, err := s.client.XRevRangeN(ctx, streamKey(entity.RoomID(roomID)), "+", "-", count).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastM
 		start = "(" + lastMessageID
 	}
 
-	streams, err := s.client.XRangeN(ctx, streamKey(roomID), start, "+", count).Result()
+	streams, err := s.client.XRangeN(ctx, streamKey(entity.RoomID(roomID)), start, "+", count).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastM
 }
 
 func (s *MessageStreamStore) DeleteMessageHistory(ctx context.Context, roomID string) error {
-	return s.client.Del(ctx, streamKey(roomID)).Err()
+	return s.client.Del(ctx, streamKey(entity.RoomID(roomID))).Err()
 }
 
 func streamMessageToEntity(stream goredis.XMessage) (*entity.Message, error) {
@@ -99,24 +99,21 @@ func streamMessageToEntity(stream goredis.XMessage) (*entity.Message, error) {
 	}
 
 	message := &entity.Message{
-		MessageID: toString(stream.Values["message_id"]),
-		SenderID:  toString(stream.Values["sender_id"]),
-		GroupID:   toString(stream.Values["group_id"]),
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		ClientMessageID: toStringPointer(stream.Values["message_id"]),
+		SenderID:        entity.UserID(toString(stream.Values["sender_id"])),
+		RoomID:          entity.RoomID(toString(stream.Values["room_id"])),
+		CreatedAt:       createdAt,
+		UpdatedAt:       updatedAt,
 	}
 
 	if text := toString(stream.Values["text"]); text != "" {
 		message.Text = &text
 	}
 	if image := toString(stream.Values["image"]); image != "" {
-		message.Image = &image
-	}
-	if video := toString(stream.Values["video"]); video != "" {
-		message.Video = &video
+		message.MediaURL = &image
 	}
 	if sticker := toString(stream.Values["sticker"]); sticker != "" {
-		message.Sticker = &sticker
+		message.StickerID = &sticker
 	}
 
 	return message, nil
@@ -154,6 +151,15 @@ func toString(value any) string {
 	}
 }
 
-func streamKey(roomID string) string {
-	return "room:" + roomID + ":messages"
+func toStringPointer(value any) *string {
+	s := toString(value)
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func streamKey(roomID entity.RoomID) string {
+	// TODO: mockとして初期値をreturnしてる
+	return ""
 }

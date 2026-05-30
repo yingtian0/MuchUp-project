@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 )
 
-func ToUserSchema(user *entity.User) *schema.UserSchema {
+func ToUserSchema(user *entity.UserProfile) *schema.UserSchema {
 
 	return &schema.UserSchema{
-		ID:                user.ID,
+		ID:                string(user.ID),
 		NickName:          user.NickName,
 		Email:             user.Email,
 		PhoneNumber:       user.PhoneNumber,
@@ -25,14 +25,15 @@ func ToUserSchema(user *entity.User) *schema.UserSchema {
 		UpdatedAt:         user.UpdatedAt,
 	}
 }
-func ToUserEntity(userSchema *schema.UserSchema) *entity.User {
+func ToUserEntity(userSchema *schema.UserSchema) *entity.UserProfile {
 	var profile map[string]interface{}
 	if userSchema.PersonalityProfile != nil {
 		_ = json.Unmarshal(userSchema.PersonalityProfile, &profile)
 	}
-	return &entity.User{
-		ID:            userSchema.ID,
+	return &entity.UserProfile{
+		ID:            entity.UserID(userSchema.ID),
 		NickName:      userSchema.NickName,
+		DisplayName:   userSchema.NickName,
 		Email:         userSchema.Email,
 		PhoneNumber:   userSchema.PhoneNumber,
 		PasswordHash:  userSchema.PasswordHash,

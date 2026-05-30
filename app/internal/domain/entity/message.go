@@ -3,47 +3,98 @@ package entity
 import (
 	"MuchUp/app/utils"
 	"errors"
+	"strings"
 	"time"
+	"unicode/utf8"
+)
+
+type RoomID string
+type MessageID string
+type SenderType string
+type MessageKind string
+type AIMessageKind string
+type MessageStatus string
+
+const (
+	SenderTypeUser SenderType = "USER"
+	SenderTypeAI   SenderType = "AI"
+)
+
+const (
+	MessageKindText    MessageKind = "TEXT"
+	MessageKindMedia   MessageKind = "MEDIA"
+	MessageKindSticker MessageKind = "STICKER"
+)
+
+const (
+	MessageStatusPending MessageStatus = "PENDING"
+	MessageStatusSent    MessageStatus = "SENT"
+	MessageStatusFailed  MessageStatus = "FAILED"
+	MessageStatusDeleted MessageStatus = "DELETED"
 )
 
 type Message struct {
-	MessageID string    `json:"message_id"`
-	SenderID  string    `json:"user_id"`
-	GroupID   string    `json:"group_id"`
-	Text      *string   `json:"text"`
-	Image     *string   `json:"image"`
-	Video     *string   `json:"video"`
-	Sticker   *string   `json:"sticker"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at"`
+	ID              MessageID
+	ClientMessageID *string
+	SenderID        UserID
+	RoomID          RoomID
+	Text            *string
+	MediaURL        *string
+	StickerID       *string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DeletedAt       time.Time
+
+	SenderType SenderType
+
+	Kind MessageKind
+
+	Status MessageStatus
+
+	IdempotencyKey *string
+
+	StreamID *string
+	Sequence int64
 }
 
-func NewMessage(userid, groupid, text string) (*Message, error) {
-	if len(text) == 0 {
+func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) (*Message, error) {
+	text = strings.TrimSpace(text)
+	if roomID == "" {
+		return nil, errors.New("room_id is required")
+	}
+	if senderID == "" {
+		return nil, errors.New("sender_id is required")
+	}
+	if text == "" {
 		return nil, errors.New("text is required")
 	}
-	if len(text) > 1000 {
+	if utf8.RuneCountInString(text) > 1000 {
 		return nil, errors.New("text is too long")
 	}
-	message := &Message{
-		MessageID: utils.GenerateUUID(),
-		SenderID:  userid,
-		GroupID:   groupid,
-		Text:      &text,
-		CreatedAt: time.Now(),
-	}
-	return message, nil
+
+	return &Message{
+		ID:              MessageID(utils.GenerateUUID()),
+		ClientMessageID: utils.StringPtr(utils.GenerateUUID()),
+		SenderID:        senderID,
+		RoomID:          roomID,
+		Text:            &text,
+		SenderType:      SenderTypeUser,
+		Kind:            MessageKindText,
+		Status:          MessageStatusSent,
+		CreatedAt:       now,
+		UpdatedAt:       now,
+	}, nil
 }
+
 func (m *Message) CanSendMessage(senderID string) bool {
-	if m.SenderID == senderID {
-		if m.Text == nil && m.Image == nil && m.Video == nil && m.Sticker == nil {
-			return false
-		}
-		if m.Text != nil || len(*m.Text) > 1000 {
-			return false
-		}
-		return true
+	if string(m.SenderID) != senderID {
+		return false
 	}
-	return false
+	if m.Text == nil && m.MediaURL == nil && m.StickerID == nil {
+		return false
+	}
+	if m.Text != nil && len(*m.Text) > 1000 {
+		return false
+	}
+	return true
 }

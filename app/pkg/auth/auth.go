@@ -15,7 +15,7 @@ type RoomMemberValidator interface {
 }
 
 type JWTClaims struct {
-	UserID  string `json:"user_id"`
-	GroupID string `json:"group_id"`
+	UserID string `json:"user_id"`
+	RoomID string `json:"room_id"`
 	jwt.RegisteredClaims
 }
