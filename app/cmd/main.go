@@ -6,15 +6,12 @@ import (
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
-	llmhandler "MuchUp/app/internal/infrastructure/llm"
 	redisstore "MuchUp/app/internal/infrastructure/redis"
-	group_service "MuchUp/app/internal/usecase/group"
+	"MuchUp/app/internal/infrastructure/server"
 	message_service "MuchUp/app/internal/usecase/message"
 	user_service "MuchUp/app/internal/usecase/user"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
-
-	"MuchUp/app/internal/infrastructure/server"
 
 	goredis "github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
@@ -45,7 +42,6 @@ func main() {
 	appLogger.Info("Database migration completed")
 	userRepo := repositories.NewUserRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
-	groupRepo := repositories.NewChatGroupRepository(db)
 	redisClient := goredis.NewClient(&goredis.Options{
 		Addr: config.GetRedisAddr(),
 	})
@@ -55,13 +51,11 @@ func main() {
 		appLogger.Fatal("Failed to connect to llm service", err)
 	}
 	defer llmConn.Close()
-	llmHandler := llmhandler.NewHandler(llmConn, messageStreamStore)
-	groupUsecase := group_service.NewGroupUsecase(groupRepo, llmHandler, appLogger)
-	userUsecase := user_service.NewUserUsecase(userRepo, groupRepo, groupUsecase)
+	userUsecase := user_service.NewUserUsecase(userRepo)
 	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
 
-	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, groupRepo, appLogger)
+	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, appLogger)
 
 	HTTPRouter := RestHandler.SetupRouter()
 	HTTPRouter.Use(middleware.RequestMetrics(appLogger))

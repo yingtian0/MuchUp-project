@@ -287,7 +287,7 @@ const docTemplate = `{
                 "deleted_at": {
                     "type": "string"
                 },
-                "group_id": {
+                "room_id": {
                     "type": "string"
                 },
                 "image": {

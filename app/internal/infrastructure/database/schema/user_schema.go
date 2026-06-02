@@ -33,9 +33,9 @@ type UserSchema struct {
 	ResetTokenExpiry       *time.Time
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
-	DeletedAt              gorm.DeletedAt    `gorm:"index"`
-	ChatGroups             []ChatGroupSchema `gorm:"many2many:user_chat_groups;"`
-	Messages               []MessageSchema   `gorm:"foreignKey:UserID"`
+	DeletedAt              gorm.DeletedAt  `gorm:"index"`
+	Rooms                  []RoomSchema    `gorm:"many2many:user_rooms;"`
+	Messages               []MessageSchema `gorm:"foreignKey:UserID"`
 }
 
 func (UserSchema) TableName() string {

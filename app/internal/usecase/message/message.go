@@ -16,6 +16,7 @@ type messageUsecase struct {
 	messageStream repository.MessageStreamStore
 }
 
+// TODO: メッセージ関連依存の初期化をこのコンストラクタに集約していく
 func NewMessageUsecase(
 	messageRepo repository.MessageRepository,
 	userRepo repository.UserRepository,
@@ -39,12 +40,9 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 		return errors.New("content is required")
 	}
 
-	user, err := u.userRepo.GetUserByID(input.SenderID)
+	_, err := u.userRepo.GetUserByID(input.SenderID)
 	if err != nil {
 		return err
-	}
-	if user.IsBlockedUsers != nil && user.IsBlockedUsers[input.SenderID] {
-		return errors.New("user is blocked")
 	}
 
 	createdAt := input.CreatedAt
@@ -58,12 +56,12 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 	}
 
 	message := &entity.Message{
-		MessageID: messageID,
-		SenderID:  input.SenderID,
-		GroupID:   input.RoomID,
-		Text:      utils.StringPtr(input.Content),
-		CreatedAt: createdAt,
-		UpdatedAt: createdAt,
+		ClientMessageID: utils.StringPtr(messageID),
+		SenderID:        entity.UserID(input.SenderID),
+		RoomID:          entity.RoomID(input.RoomID),
+		Text:            utils.StringPtr(input.Content),
+		CreatedAt:       createdAt,
+		UpdatedAt:       createdAt,
 	}
 
 	_, err = u.messageStream.AppendMessage(ctx, message)

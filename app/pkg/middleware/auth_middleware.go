@@ -11,9 +11,9 @@ import (
 type contextKey string
 
 const (
-	UserIDContextKey  contextKey = "userID"
-	GroupIDContextKey contextKey = "groupID"
-	ClaimsContextKey  contextKey = "claims"
+	UserIDContextKey contextKey = "userID"
+	RoomIDContextKey contextKey = "roomID"
+	ClaimsContextKey contextKey = "claims"
 )
 
 func JWTMiddleware(next http.Handler, validator auth.TokenValidator) http.Handler {
@@ -36,11 +36,13 @@ func JWTMiddleware(next http.Handler, validator auth.TokenValidator) http.Handle
 		}
 
 		ctx = context.WithValue(r.Context(), UserIDContextKey, claims.UserID)
-		ctx = context.WithValue(ctx, GroupIDContextKey, claims.GroupID)
+		ctx = context.WithValue(ctx, RoomIDContextKey, claims.RoomID)
 		ctx = context.WithValue(ctx, ClaimsContextKey, claims)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func CheckMemberLicense(next http.Handler)
+func CheckMemberLicense(next http.Handler) http.Handler {
+	return next
+}

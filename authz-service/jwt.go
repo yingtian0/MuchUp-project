@@ -1,6 +1,7 @@
 package authzservice
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os"
 	"time"
@@ -8,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = []byte("jwt_scret_key")
+var signingKey = mustLoadSigningKey()
 
 var tokenTTL = 1 * time.Hour
 
@@ -24,21 +25,37 @@ func init() {
 	}
 }
 
+func mustLoadSigningKey() []byte {
+	if value := os.Getenv("JWT_SECRET"); value != "" {
+		return []byte(value)
+	}
+
+	key := make([]byte, 32)
+	if _, err := rand.Read(key); err != nil {
+		panic(fmt.Sprintf("failed to generate JWT signing key: %v", err))
+	}
+
+	return key
+}
+
+// CustomClaim contains MuchUp-specific JWT claims.
 type CustomClaim struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
+// IssueToken signs a JWT for the provided user identity.
 func IssueToken(userID, username string) (string, error) {
-	expiresAt := time.Now().Add(tokenTTL)
+	now := time.Now()
+	expiresAt := now.Add(tokenTTL)
 	claims := CustomClaim{
 		UserID:   userID,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID,
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(now),
 		},
 	}
 
