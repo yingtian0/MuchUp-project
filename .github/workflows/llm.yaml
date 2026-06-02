@@ -47,7 +47,7 @@ jobs:
 
     - name: Test
       # pytest はテストが1件も収集されないと終了コード5で失敗する。
-      # llm-service に実テストを追加したら、この fallback を外して0件収集をCI失敗にする。
+      # TODO:llm-service に実テストを追加したら、[$? -eq 5]を外して0件収集をCI失敗にする。
       run: uv run pytest || [ $? -eq 5 ]
       env:
         PYTHONPATH: .
