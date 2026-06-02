@@ -15,7 +15,7 @@ func ToRoomSchema(room *entity.Room) *schema.RoomSchema {
 		Type:      string(room.Type),
 		Status:    string(room.Status),
 		Capacity:  room.Capacity,
-		CreatedBy: string(room.CreatedBy),
+		CreatedBy: string(*room.CreatedBy),
 		Users:     users,
 	}
 }
@@ -37,7 +37,7 @@ func ToRoomEntity(roomSchema *schema.RoomSchema) *entity.Room {
 		Status:    entity.RoomStatus(roomSchema.Status),
 		Capacity:  roomSchema.Capacity,
 		Members:   members,
-		CreatedBy: entity.UserID(roomSchema.CreatedBy),
+		CreatedBy: new(entity.UserID(roomSchema.CreatedBy)),
 		CreatedAt: roomSchema.CreatedAt,
 	}
 }
