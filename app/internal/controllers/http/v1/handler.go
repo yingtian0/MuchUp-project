@@ -4,11 +4,8 @@ import (
 	"MuchUp/app/internal/controllers/http/ws"
 	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
-	"os"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 type Handler struct {
@@ -33,14 +30,6 @@ type CreateUserRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
-}
-
-var googleOAuthConfig = &oauth2.Config{
-	ClientID:     os.Getenv("CLIENT_ID"),
-	ClientSecret: os.Getenv("CLIENT_SECRET"),
-	RedirectURL:  "https://localhost:8080/api/v1/auth/google/callback",
-	Scopes:       []string{"email", "openid"},
-	Endpoint:     google.Endpoint,
 }
 
 type CreateMessageRequest struct {

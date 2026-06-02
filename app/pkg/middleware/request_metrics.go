@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"MuchUp/app/pkg/logger"
 	"net/http"
 	"time"
+
+	"MuchUp/app/pkg/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -21,19 +22,18 @@ func (r *statusRecorder) WriteHeader(statusCode int) {
 func RequestMetrics(appLogger logger.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			start := time.Now()
-
-			next.ServeHTTP(w, r)
-			elapsed := time.Since(start)
 			rec := &statusRecorder{
 				ResponseWriter: w,
 				status:         http.StatusOK,
 			}
 
-			path := r.Response.Request.URL.Path
+			next.ServeHTTP(rec, r)
 
-			appLogger.Info(
+			elapsed := time.Since(start)
+			path := r.URL.Path
+
+			appLogger.Infof(
 				"[request] method=%s path=%s status=%d latency_ms=%d",
 				r.Method,
 				path,
@@ -41,6 +41,5 @@ func RequestMetrics(appLogger logger.Logger) mux.MiddlewareFunc {
 				elapsed.Milliseconds(),
 			)
 		})
-
 	}
 }

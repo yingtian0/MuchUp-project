@@ -1,13 +1,14 @@
 package llm
 
 import (
+	"context"
+	"time"
+
 	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
 	llmv1 "MuchUp/app/proto/gen/go/llm/v1"
 	"MuchUp/app/utils"
-	"context"
-	"time"
 
 	"google.golang.org/grpc"
 )
@@ -33,6 +34,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 	if ownerName == "" {
 		ownerName = owner.DisplayName
 	}
+
 	request := &llmv1.GenerateReplyRequest{
 		RoomId:       string(room.ID),
 		SessionId:    string(room.ID),
@@ -61,6 +63,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 	if err != nil {
 		return err
 	}
+
 	if response.GetContent() == "" {
 		return nil
 	}
@@ -69,6 +72,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 	if response.GetCreatedAt() == 0 {
 		createdAt = time.Now()
 	}
+
 	content := response.GetContent()
 	message := &entity.Message{
 		ID:              entity.MessageID(utils.GenerateUUID()),
@@ -79,6 +83,8 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 		CreatedAt:       createdAt,
 		UpdatedAt:       createdAt,
 	}
+
 	_, err = h.messageStream.AppendMessage(ctx, message)
+
 	return err
 }

@@ -1,14 +1,15 @@
 package ws
 
 import (
-	"MuchUp/app/internal/usecase/dto"
-	"MuchUp/app/utils"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"MuchUp/app/internal/usecase/dto"
+	"MuchUp/app/utils"
 
 	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
@@ -21,7 +22,7 @@ import (
 // CheckOrigin が常に true なので、どの Origin からの接続も許可する。
 // 開発中は便利だが、本番ではセキュリティ上かなり緩い設定。
 var Upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
+	CheckOrigin: func(_ *http.Request) bool {
 		return true
 	},
 }
@@ -124,6 +125,7 @@ func (h *Hub) Run() {
 		// 全体ブロードキャスト
 		case message := <-h.Broadcast:
 			h.Mutex.RLock()
+
 			for client := range h.Clients {
 				select {
 				case client.Send <- message:
@@ -135,6 +137,7 @@ func (h *Hub) Run() {
 					delete(h.Clients, client)
 				}
 			}
+
 			h.Mutex.RUnlock()
 		}
 	}
@@ -211,6 +214,7 @@ func (c *Client) ReadPump(handler *ChatHandler) {
 	defer func() {
 		// 接続終了時は Hub に解除通知し、コネクションを閉じる
 		c.Hub.Unregister <- c
+
 		c.Conn.Close()
 	}()
 
@@ -221,6 +225,7 @@ func (c *Client) ReadPump(handler *ChatHandler) {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("WebSocket error: %v", err)
 			}
+
 			break
 		}
 
@@ -258,7 +263,9 @@ func (c *Client) WritePump() {
 	}
 
 	// Send チャネルが閉じられたら CloseMessage を送って終了
-	c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+	if err := c.Conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
+		log.Printf("WebSocket close message error: %v", err)
+	}
 }
 
 // チャットメッセージ受信時の処理。
@@ -276,12 +283,28 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 	}
 
 	// フロントから渡された値を取り出す
-	content, _ := data["content"].(string)
-	recipientId, _ := data["recipientId"].(string)
-	roomID, _ := data["room_id"].(string)
-	if roomID == "" {
-		roomID, _ = data["roomId"].(string)
+	content, ok := data["content"].(string)
+	if !ok {
+		content = ""
 	}
+
+	recipientID, ok := data["recipientId"].(string)
+	if !ok {
+		recipientID = ""
+	}
+
+	roomID, ok := data["room_id"].(string)
+	if !ok {
+		roomID = ""
+	}
+
+	if roomID == "" {
+		roomID, ok = data["roomId"].(string)
+		if !ok {
+			roomID = ""
+		}
+	}
+
 	if roomID == "" {
 		roomID = client.RoomID
 	}
@@ -332,8 +355,8 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		// ここは messageType の値次第で送信先を変える意図だが、
 		// 実際には messageType == "chat_message" のため、
 		// この条件には入らない可能性が高い
-		if messageType == "direct" && recipientId != "" {
-			ch.Hub.SendToUser(responseData, recipientId)
+		if messageType == "direct" && recipientID != "" {
+			ch.Hub.SendToUser(responseData, recipientID)
 		} else if roomID != "" {
 			ch.Hub.BroadcastToRoom(responseData, roomID)
 		}

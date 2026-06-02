@@ -33,6 +33,7 @@ func NewMatchingTicket(userID UserID, idempotencyKey string, now time.Time) (*Ma
 	if userID == "" {
 		return nil, errors.New("user_id is required")
 	}
+
 	if idempotencyKey == "" {
 		return nil, errors.New("idempotency_key is required")
 	}

@@ -19,7 +19,13 @@ func (m *MockUserRepository) GetUserByID(id string) (*entity.UserProfile, error)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*entity.UserProfile), args.Error(1)
+
+	user, ok := args.Get(0).(*entity.UserProfile)
+	if !ok {
+		return nil, args.Error(1)
+	}
+
+	return user, args.Error(1)
 }
 func (m *MockUserRepository) UpdateUser(user *entity.UserProfile) error {
 	args := m.Called(user)
@@ -34,19 +40,37 @@ func (m *MockUserRepository) GetUsers(limit, offset int) ([]*entity.UserProfile,
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*entity.UserProfile), args.Error(1)
+
+	users, ok := args.Get(0).([]*entity.UserProfile)
+	if !ok {
+		return nil, args.Error(1)
+	}
+
+	return users, args.Error(1)
 }
 func (m *MockUserRepository) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
 	args := m.Called(roomID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*entity.UserProfile), args.Error(1)
+
+	users, ok := args.Get(0).([]*entity.UserProfile)
+	if !ok {
+		return nil, args.Error(1)
+	}
+
+	return users, args.Error(1)
 }
 func (m *MockUserRepository) GetUserByEmail(email string) (*entity.UserProfile, error) {
 	args := m.Called(email)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*entity.UserProfile), args.Error(1)
+
+	user, ok := args.Get(0).(*entity.UserProfile)
+	if !ok {
+		return nil, args.Error(1)
+	}
+
+	return user, args.Error(1)
 }

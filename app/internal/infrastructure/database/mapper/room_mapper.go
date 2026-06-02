@@ -10,6 +10,7 @@ func ToRoomSchema(room *entity.Room) *schema.RoomSchema {
 	for userID := range room.Members {
 		users = append(users, schema.UserSchema{ID: string(userID)})
 	}
+
 	return &schema.RoomSchema{
 		ID:        string(room.ID),
 		Type:      string(room.Type),
@@ -24,6 +25,7 @@ func ToRoomEntity(roomSchema *schema.RoomSchema) *entity.Room {
 	if roomSchema == nil {
 		return nil
 	}
+
 	members := make(map[entity.UserID]*entity.RoomMember, len(roomSchema.Users))
 	for _, userSchema := range roomSchema.Users {
 		members[entity.UserID(userSchema.ID)] = &entity.RoomMember{
@@ -31,6 +33,7 @@ func ToRoomEntity(roomSchema *schema.RoomSchema) *entity.Room {
 			Status: entity.RoomMemberJoined,
 		}
 	}
+
 	return &entity.Room{
 		ID:        entity.RoomID(roomSchema.ID),
 		Type:      entity.RoomType(roomSchema.Type),

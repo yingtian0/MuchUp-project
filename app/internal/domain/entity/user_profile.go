@@ -60,6 +60,7 @@ func (u *UserProfile) CanSendMessageTo(target UserID) bool {
 	if _, blocked := u.BlockedUserIDs[target]; blocked {
 		return false
 	}
+
 	return true
 }
 
@@ -67,9 +68,12 @@ func (u *UserProfile) Block(target UserID) error {
 	if u.ID == target {
 		return errors.New("cannot block yourself")
 	}
+
 	if u.BlockedUserIDs == nil {
 		u.BlockedUserIDs = map[UserID]struct{}{}
 	}
+
 	u.BlockedUserIDs[target] = struct{}{}
+
 	return nil
 }

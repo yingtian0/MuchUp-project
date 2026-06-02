@@ -35,9 +35,9 @@ func (v *JWTValidator) ValidateToken(ctx context.Context, tokenString string) (*
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
+
 		return v.secretKey, nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
@@ -62,7 +62,7 @@ func (v *JWTValidator) ValidateToken(ctx context.Context, tokenString string) (*
 	return claims, nil
 }
 
-func (v *JWTValidator) GenerateToken(ctx context.Context, userID, roomID string) (string, error) {
+func (v *JWTValidator) GenerateToken(_ context.Context, userID, roomID string) (string, error) {
 	now := time.Now()
 	claims := &auth.JWTClaims{
 		UserID: userID,
@@ -77,6 +77,7 @@ func (v *JWTValidator) GenerateToken(ctx context.Context, userID, roomID string)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	return token.SignedString(v.secretKey)
 }
 

@@ -18,17 +18,20 @@ const (
 
 func JWTMiddleware(next http.Handler, validator auth.TokenValidator) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var ctx context.Context
+		ctx := r.Context()
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "missing authorization header", http.StatusUnauthorized)
 			return
 		}
+
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
 			http.Error(w, "invalid token format", http.StatusUnauthorized)
 			return
 		}
+
 		claims, err := validator.ValidateToken(ctx, tokenString)
 		if err != nil {
 			http.Error(w, "invalid token", http.StatusUnauthorized)

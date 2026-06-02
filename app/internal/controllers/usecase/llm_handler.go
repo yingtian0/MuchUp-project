@@ -1,8 +1,9 @@
 package usecase
 
 import (
-	"MuchUp/app/internal/domain/entity"
 	"context"
+
+	"MuchUp/app/internal/domain/entity"
 )
 
 type LLMHandler interface {

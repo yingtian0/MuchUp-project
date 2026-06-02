@@ -3,8 +3,9 @@ package schema
 import (
 	"encoding/json"
 	"errors"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type UserSchema struct {
@@ -41,9 +42,10 @@ type UserSchema struct {
 func (UserSchema) TableName() string {
 	return "users"
 }
-func (u *UserSchema) BeforeCreate(tx *gorm.DB) error {
+func (u *UserSchema) BeforeCreate(_ *gorm.DB) error {
 	if u.Email == nil && u.PhoneNumber == nil {
 		return errors.New("either email or phone number must be provided")
 	}
+
 	return nil
 }

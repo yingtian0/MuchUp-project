@@ -1,9 +1,10 @@
 package usecase
 
 import (
+	"context"
+
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/usecase/dto"
-	"context"
 )
 
 type MessageUsecase interface {

@@ -8,9 +8,11 @@ import (
 func ToMessageSchema(message *entity.Message) *schema.MessageSchema {
 	senderID := string(message.SenderID)
 	text := ""
+
 	if message.Text != nil {
 		text = *message.Text
 	}
+
 	return &schema.MessageSchema{
 		ID:       string(message.ID),
 		Text:     text,
@@ -23,6 +25,7 @@ func ToMessageEntity(messageSchema *schema.MessageSchema) *entity.Message {
 	if messageSchema.SenderID != nil {
 		senderID = entity.UserID(*messageSchema.SenderID)
 	}
+
 	return &entity.Message{
 		ID:        entity.MessageID(messageSchema.ID),
 		Text:      &messageSchema.Text,

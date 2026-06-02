@@ -1,10 +1,13 @@
 package logger
+
 import (
 	"context"
 	"os"
 	"strings"
+
 	"github.com/rs/zerolog"
 )
+
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})
@@ -21,12 +24,15 @@ type Logger interface {
 	Errorf(format string, args ...interface{})
 	Fatalf(format string, args ...interface{})
 }
-type LoggerStruct struct {
+type Struct struct {
 	logger *zerolog.Logger
 }
-var _ Logger = (*LoggerStruct)(nil)
-func New(level string) *LoggerStruct {
+
+var _ Logger = (*Struct)(nil)
+
+func New(level string) *Struct {
 	var l zerolog.Level
+
 	switch strings.ToLower(level) {
 	case "error":
 		l = zerolog.ErrorLevel
@@ -39,68 +45,74 @@ func New(level string) *LoggerStruct {
 	default:
 		l = zerolog.InfoLevel
 	}
+
 	zerolog.SetGlobalLevel(l)
+
 	skipFrameCount := 3
 	logger := zerolog.New(os.Stdout).With().Timestamp().CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + skipFrameCount).Logger()
-	return &LoggerStruct{
+
+	return &Struct{
 		logger: &logger,
 	}
 }
 func NewLogger() Logger {
 	return New("info")
 }
-func (l *LoggerStruct) Debug(msg string, args ...interface{}) {
+func (l *Struct) Debug(msg string, args ...interface{}) {
 	l.logger.Debug().Msgf(msg, args...)
 }
-func (l *LoggerStruct) Info(msg string, args ...interface{}) {
+func (l *Struct) Info(msg string, args ...interface{}) {
 	l.logger.Info().Msgf(msg, args...)
 }
-func (l *LoggerStruct) Warn(msg string, args ...interface{}) {
+func (l *Struct) Warn(msg string, args ...interface{}) {
 	l.logger.Warn().Msgf(msg, args...)
 }
-func (l *LoggerStruct) Error(msg string, args ...interface{}) {
+func (l *Struct) Error(msg string, args ...interface{}) {
 	l.logger.Error().Msgf(msg, args...)
 }
-func (l *LoggerStruct) Fatal(msg string, args ...interface{}) {
+func (l *Struct) Fatal(msg string, args ...interface{}) {
 	l.logger.Fatal().Msgf(msg, args...)
 	os.Exit(1)
 }
-func (l *LoggerStruct) WithContext(ctx context.Context) Logger {
-	return &LoggerStruct{
+func (l *Struct) WithContext(_ context.Context) Logger {
+	return &Struct{
 		logger: l.logger,
 	}
 }
-func (l *LoggerStruct) WithError(err error) Logger {
+func (l *Struct) WithError(err error) Logger {
 	newLogger := l.logger.With().Err(err).Logger()
-	return &LoggerStruct{
+
+	return &Struct{
 		logger: &newLogger,
 	}
 }
-func (l *LoggerStruct) WithField(key string, value interface{}) Logger {
+func (l *Struct) WithField(key string, value interface{}) Logger {
 	newLogger := l.logger.With().Interface(key, value).Logger()
-	return &LoggerStruct{
+
+	return &Struct{
 		logger: &newLogger,
 	}
 }
-func (l *LoggerStruct) WithFields(fields map[string]interface{}) Logger {
+func (l *Struct) WithFields(fields map[string]interface{}) Logger {
 	newLogger := l.logger.With().Fields(fields).Logger()
-	return &LoggerStruct{
+
+	return &Struct{
 		logger: &newLogger,
 	}
 }
-func (l *LoggerStruct) Debugf(format string, args ...interface{}) {
+func (l *Struct) Debugf(format string, args ...interface{}) {
 	l.logger.Debug().Msgf(format, args...)
 }
-func (l *LoggerStruct) Infof(format string, args ...interface{}) {
+func (l *Struct) Infof(format string, args ...interface{}) {
 	l.logger.Info().Msgf(format, args...)
 }
-func (l *LoggerStruct) Warnf(format string, args ...interface{}) {
+func (l *Struct) Warnf(format string, args ...interface{}) {
 	l.logger.Warn().Msgf(format, args...)
 }
-func (l *LoggerStruct) Errorf(format string, args ...interface{}) {
+func (l *Struct) Errorf(format string, args ...interface{}) {
 	l.logger.Error().Msgf(format, args...)
 }
-func (l *LoggerStruct) Fatalf(format string, args ...interface{}) {
+func (l *Struct) Fatalf(format string, args ...interface{}) {
 	l.logger.Fatal().Msgf(format, args...)
 	os.Exit(1)
 }

@@ -35,6 +35,7 @@ func (c *Config) GetRedisAddr() string {
 	if c.RedisAddr == "" {
 		return "localhost:6379"
 	}
+
 	return c.RedisAddr
 }
 
@@ -42,6 +43,7 @@ func (c *Config) GetLLMAddr() string {
 	if c.LLMAddr == "" {
 		return "localhost:50052"
 	}
+
 	return c.LLMAddr
 }
 
@@ -50,5 +52,6 @@ func getEnv(key, fallback string) string {
 	if val == "" {
 		return fallback
 	}
+
 	return val
 }

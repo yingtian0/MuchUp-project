@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"MuchUp/app/internal/domain/entity"
 	"context"
+
+	"MuchUp/app/internal/domain/entity"
 )
 
 type UserRepository interface {
