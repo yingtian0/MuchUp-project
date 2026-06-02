@@ -13,6 +13,8 @@ var signingKey = mustLoadSigningKey()
 
 var tokenTTL = 1 * time.Hour
 
+var secretKey []byte
+
 func init() {
 	if v := os.Getenv("JWT_SECRET"); v != "" {
 		secretKey = []byte(v)
