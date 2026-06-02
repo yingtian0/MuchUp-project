@@ -1,0 +1,77 @@
+amends "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Builtins.pkl"
+
+local linters = new Mapping<String, Step> {
+    ["frontend"] {
+        glob = List("frontend/**/*.{js,jsx,ts,tsx,json,css}")
+        check = "cd frontend && bun run check"
+        fix = "cd frontend && bun run fix"
+    }
+    ["app"] {
+        glob = List("app/**/*.go")
+        check = "cd app && golangci-lint run"
+        fix = "cd app && golangci-lint fmt && golangci-lint run --fix"
+    }
+    ["authz"] {
+        glob = List("authz-service/**/*.go")
+        check = "cd authz-service && golangci-lint run"
+        fix = "cd authz-service && golangci-lint fmt && golangci-lint run --fix"
+    }
+    ["llm"] {
+        glob = List("llm-service/**/*.py")
+        check = "cd llm-service && uv run ruff check ."
+        fix = "cd llm-service && uv run ruff format . && uv run ruff check --fix ."
+    }
+    ["proto"]{
+        glob = List("**/*.proto", "buf.yaml", "buf.gen.yaml")
+        check = "buf format --exit-code . && buf lint ."
+        fix = "buf format -w ."
+    }
+}
+
+local formatters = new Mapping<String, Step> {
+    ["frontend"] {
+        glob = List("frontend/**/*.{js,jsx,ts,tsx,json,css}")
+        fix = "cd frontend && bun run format"
+    }
+    ["app"] {
+        glob = List("app/**/*.go")
+        fix = "cd app && golangci-lint fmt"
+    }
+    ["authz"] {
+        glob = List("authz-service/**/*.go")
+        fix = "cd authz-service && golangci-lint fmt"
+    }
+    ["llm"] {
+        glob = List("llm-service/**/*.py")
+        fix = "cd llm-service && uv run ruff format"
+    }
+    ["proto"] {
+        glob = List("**/*.proto", "buf.yaml", "buf.gen.yaml")
+        fix = "buf format -w ."
+    }
+}
+    
+
+hooks {
+    ["pre-commit"] {
+        fix = true       // runs the fix step to make modifications
+        stash = "git"    // stashes unstaged changes before running fix steps
+        steps = linters
+    }
+    ["pre-push"] {
+        steps = linters
+    }
+    ["fix"] {
+        fix = true
+        steps = linters
+    }
+    ["check"] {
+        steps = linters
+    }
+    // run only format
+    ["fmt"] {
+        fix = true
+        steps = formatters
+    }
+}

@@ -18,6 +18,37 @@
         pkgs = import nixpkgs { inherit system; };
 
         go = pkgs.go_1_26;
+
+        hkVersion = "1.46.0";
+        hk = pkgs.rustPlatform.buildRustPackage rec {
+          doCheck = false;
+          pname = "hk";
+          version = hkVersion;
+
+          src = pkgs.fetchFromGitHub {
+            owner = "jdx";
+            repo = "hk";
+            rev = "v${version}";
+            hash = "sha256-nuWanHAMgaL24CsOXPs8qFVrSDWDLkzJTKLHG/VQvKc=";
+          };
+
+          cargoHash = "sha256-TVDM94HFB39ys6zoaD+AgJvoMDMe4xigFAKpRITsZ1k=";
+
+          meta = {
+            description = "Git hook manager";
+            homepage = "https://github.com/jdx/hk";
+            license = pkgs.lib.licenses.mit;
+            mainProgram = "hk";
+          };
+
+          nativeBuildInputs = [
+            pkgs.pkg-config
+            pkgs.pkl
+          ];
+          buildInputs = [
+            pkgs.openssl
+          ];
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -37,6 +68,9 @@
             protoc-gen-go
             protoc-gen-go-grpc
             grpcurl
+
+            hk
+            pkl
           ];
 
           shellHook = ''
