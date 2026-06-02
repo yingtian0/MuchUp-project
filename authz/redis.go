@@ -19,13 +19,13 @@ end
 `)
 
 func LockProcess(ctx context.Context, client *redis.Client, key string, ttl time.Duration) (string, bool, error) {
-
 	value := uuid.NewString()
 
 	ok, err := client.SetNX(ctx, key, value, ttl).Result()
 	if err != nil {
 		return "", false, fmt.Errorf("failed to lock redis process: %w", err)
 	}
+
 	if !ok {
 		return "", false, nil
 	}

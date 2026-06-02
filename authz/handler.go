@@ -24,6 +24,7 @@ type errorResponse struct {
 func writeJSON(w http.ResponseWriter, status int, payload any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+
 	return json.NewEncoder(w).Encode(payload)
 }
 
@@ -44,6 +45,7 @@ func LoginHandler(store *UserStore) HandlerFunc {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+
 		defer func() {
 			_ = r.Body.Close()
 		}()
@@ -81,6 +83,7 @@ func SignupHandler(store *UserStore) HandlerFunc {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+
 		defer func() {
 			_ = r.Body.Close()
 		}()
@@ -97,25 +100,21 @@ func SignupHandler(store *UserStore) HandlerFunc {
 		user, err := store.Create(req.Username, req.Email, req.Password)
 		if err != nil {
 			if errors.Is(err, ErrUserExists) {
-				if errors.Is(err, ErrUserExists) {
-					writeJSON(w, http.StatusConflict, errorResponse{Code: http.StatusConflict, Message: err.Error()})
-				}
-				return err
+				return writeJSON(w, http.StatusConflict, errorResponse{Code: http.StatusConflict, Message: err.Error()})
 			}
 
-			token, err := IssueToken(user.ID, user.Username)
-			if err != nil {
-				return err
-			}
-
-			return writeJSON(w, http.StatusOK, AuthResponse{
-				Token:    token,
-				UserID:   user.ID,
-				Username: user.Username,
-			})
-
+			return err
 		}
-		return nil
 
+		token, err := IssueToken(user.ID, user.Username)
+		if err != nil {
+			return err
+		}
+
+		return writeJSON(w, http.StatusOK, AuthResponse{
+			Token:    token,
+			UserID:   user.ID,
+			Username: user.Username,
+		})
 	}
 }
