@@ -1,4 +1,4 @@
-package authzservice
+package authz
 
 import (
 	"context"

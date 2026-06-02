@@ -1,4 +1,4 @@
-package authzservice
+package authz
 
 // LoginRequest is the request payload for login.
 type LoginRequest struct {
