@@ -1,18 +1,16 @@
 module MuchUp/app
 
-go 1.25.0
+go 1.25.1
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.3
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/swag v1.16.4
-	golang.org/x/crypto v0.49.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260414002931-afd174a4e478
 	google.golang.org/grpc v1.80.0
@@ -40,13 +38,14 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect

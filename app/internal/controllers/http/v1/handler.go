@@ -2,7 +2,7 @@ package rest
 
 import (
 	"MuchUp/app/internal/controllers/http/ws"
-	"MuchUp/app/internal/domain/usecase"
+	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
 	"os"
 
@@ -45,7 +45,7 @@ var googleOAuthConfig = &oauth2.Config{
 
 type CreateMessageRequest struct {
 	Content string `json:"content" validate:"required,min=1,max=1000"`
-	GroupID string `json:"group_id" validate:"required"`
+	RoomID  string `json:"room_id" validate:"required"`
 }
 type UpdateUserRequest struct {
 	Name  string `json:"name,omitempty" validate:"omitempty,min=2,max=50"`

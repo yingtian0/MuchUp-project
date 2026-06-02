@@ -62,11 +62,11 @@ func (v *JWTValidator) ValidateToken(ctx context.Context, tokenString string) (*
 	return claims, nil
 }
 
-func (v *JWTValidator) GenerateToken(ctx context.Context, userID, groupID string) (string, error) {
+func (v *JWTValidator) GenerateToken(ctx context.Context, userID, roomID string) (string, error) {
 	now := time.Now()
 	claims := &auth.JWTClaims{
-		UserID:  userID,
-		GroupID: groupID,
+		UserID: userID,
+		RoomID: roomID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    v.issuer,
 			Audience:  []string{v.audience},
@@ -86,5 +86,5 @@ func (v *JWTValidator) RefreshToken(ctx context.Context, tokenString string) (st
 		return "", fmt.Errorf("failed to validate token for refresh: %w", err)
 	}
 
-	return v.GenerateToken(ctx, claims.UserID, claims.GroupID)
+	return v.GenerateToken(ctx, claims.UserID, claims.RoomID)
 }
