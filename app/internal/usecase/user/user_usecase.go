@@ -72,17 +72,17 @@ func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error)
 
 // TODO: 認証基盤の実装に合わせてログイン処理を実装する
 func (u *userUsecase) Login(_, _ string) (string, error) {
-	return "", errors.New("not implemented")
+	return "", usecase.ErrNotImplemented
 }
 
 // TODO: ルーム所属管理の実装に合わせて参加処理を実装する
 func (u *userUsecase) JoinRoom(_, _ string) error {
-	return errors.New("not implemented")
+	return usecase.ErrNotImplemented
 }
 
 // TODO: ルーム所属管理の実装に合わせて退出処理を実装する
 func (u *userUsecase) LeaveRoom(_, _ string) error {
-	return errors.New("not implemented")
+	return usecase.ErrNotImplemented
 }
 
 func (u *userUsecase) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
