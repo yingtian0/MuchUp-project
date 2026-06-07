@@ -76,7 +76,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 	content := response.GetContent()
 	message := &entity.Message{
 		ID:              entity.MessageID(utils.GenerateUUID()),
-		ClientMessageID: utils.StringPtr("room-created"),
+		ClientMessageID: new("room-created"),
 		SenderID:        entity.UserID(aiAgentUserID),
 		RoomID:          room.ID,
 		Text:            &content,

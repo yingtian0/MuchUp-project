@@ -60,10 +60,10 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 	}
 
 	message := &entity.Message{
-		ClientMessageID: utils.StringPtr(messageID),
+		ClientMessageID: new(messageID),
 		SenderID:        entity.UserID(input.SenderID),
 		RoomID:          entity.RoomID(input.RoomID),
-		Text:            utils.StringPtr(input.Content),
+		Text:            new(input.Content),
 		CreatedAt:       createdAt,
 		UpdatedAt:       createdAt,
 	}

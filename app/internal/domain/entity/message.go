@@ -79,7 +79,7 @@ func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) 
 
 	return &Message{
 		ID:              MessageID(utils.GenerateUUID()),
-		ClientMessageID: utils.StringPtr(utils.GenerateUUID()),
+		ClientMessageID: new(utils.GenerateUUID()),
 		SenderID:        senderID,
 		RoomID:          roomID,
 		Text:            &text,
