@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	authz "MuchUp/authz"
+	"MuchUp/authz"
 )
 
 func main() {
