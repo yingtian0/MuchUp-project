@@ -60,11 +60,11 @@ type ChatHandler struct {
 // WebSocket 上でやり取りする共通メッセージ形式。
 // Type でイベント種別を判定し、Data に実データを積む。
 type WebSocketMessage struct {
-	Type      string      `json:"type"`
-	Data      interface{} `json:"data"`
-	UserID    string      `json:"user_id,omitempty"`
-	RoomID    string      `json:"room_id,omitempty"`
-	Timestamp int64       `json:"timestamp,omitempty"`
+	Type      string `json:"type"`
+	Data      any    `json:"data"`
+	UserID    string `json:"user_id,omitempty"`
+	RoomID    string `json:"room_id,omitempty"`
+	Timestamp int64  `json:"timestamp,omitempty"`
 }
 
 // チャット本文をフロントへ返すときの整形済みメッセージ。
@@ -276,8 +276,8 @@ func (c *Client) WritePump() {
 // 4. ユーザー名を取得
 // 5. フロント向けレスポンスを作り配信
 func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMessage) {
-	// Data は interface{} なので map として解釈する
-	data, ok := wsMessage.Data.(map[string]interface{})
+	// Data は any なので map として解釈する
+	data, ok := wsMessage.Data.(map[string]any)
 	if !ok {
 		return
 	}
@@ -388,7 +388,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 	response := WebSocketMessage{
 		Type:   "typing",
 		UserID: client.UserID,
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"user_id": client.UserID,
 			"room_id": client.RoomID,
 			"typing":  wsMessage.Data,
@@ -405,7 +405,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 
 // TODO: 実装変更予定のためコメントアウト
 //func (ch *ChatHandler) HandleJoinRoom(client *Client, wsMessage WebSocketMessage) {
-//	data, ok := wsMessage.Data.(map[string]interface{})
+//	data, ok := wsMessage.Data.(map[string]any)
 //	if !ok {
 //		return
 //	}
@@ -464,7 +464,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 //	if client.UserID != "ai_agent" && newRoomID != "" {
 //		aiMessage := WebSocketMessage{
 //			Type: "new_message",
-//			Data: map[string]interface{}{
+//			Data: map[string]any{
 //				"id":        "ai_intro",
 //				"content":   "こんにちは!私はこのルームをサポートするAIです。皆さんが仲良くなれるようにお手伝いします。何か質問があれば気軽に話しかけてくださいね!",
 //				"user_id":   "ai_agent",
