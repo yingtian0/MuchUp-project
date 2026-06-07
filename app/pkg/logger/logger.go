@@ -9,20 +9,20 @@ import (
 )
 
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
-	Fatal(msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
+	Fatal(msg string, args ...any)
 	WithContext(ctx context.Context) Logger
 	WithError(err error) Logger
-	WithField(key string, value interface{}) Logger
-	WithFields(fields map[string]interface{}) Logger
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
+	WithField(key string, value any) Logger
+	WithFields(fields map[string]any) Logger
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
 }
 type AppLogger struct {
 	logger *zerolog.Logger
@@ -58,19 +58,19 @@ func New(level string) *AppLogger {
 func NewLogger() Logger {
 	return New("info")
 }
-func (l *AppLogger) Debug(msg string, args ...interface{}) {
+func (l *AppLogger) Debug(msg string, args ...any) {
 	l.logger.Debug().Msgf(msg, args...)
 }
-func (l *AppLogger) Info(msg string, args ...interface{}) {
+func (l *AppLogger) Info(msg string, args ...any) {
 	l.logger.Info().Msgf(msg, args...)
 }
-func (l *AppLogger) Warn(msg string, args ...interface{}) {
+func (l *AppLogger) Warn(msg string, args ...any) {
 	l.logger.Warn().Msgf(msg, args...)
 }
-func (l *AppLogger) Error(msg string, args ...interface{}) {
+func (l *AppLogger) Error(msg string, args ...any) {
 	l.logger.Error().Msgf(msg, args...)
 }
-func (l *AppLogger) Fatal(msg string, args ...interface{}) {
+func (l *AppLogger) Fatal(msg string, args ...any) {
 	l.logger.Fatal().Msgf(msg, args...)
 	os.Exit(1)
 }
@@ -86,33 +86,33 @@ func (l *AppLogger) WithError(err error) Logger {
 		logger: &newLogger,
 	}
 }
-func (l *AppLogger) WithField(key string, value interface{}) Logger {
+func (l *AppLogger) WithField(key string, value any) Logger {
 	newLogger := l.logger.With().Interface(key, value).Logger()
 
 	return &AppLogger{
 		logger: &newLogger,
 	}
 }
-func (l *AppLogger) WithFields(fields map[string]interface{}) Logger {
+func (l *AppLogger) WithFields(fields map[string]any) Logger {
 	newLogger := l.logger.With().Fields(fields).Logger()
 
 	return &AppLogger{
 		logger: &newLogger,
 	}
 }
-func (l *AppLogger) Debugf(format string, args ...interface{}) {
+func (l *AppLogger) Debugf(format string, args ...any) {
 	l.logger.Debug().Msgf(format, args...)
 }
-func (l *AppLogger) Infof(format string, args ...interface{}) {
+func (l *AppLogger) Infof(format string, args ...any) {
 	l.logger.Info().Msgf(format, args...)
 }
-func (l *AppLogger) Warnf(format string, args ...interface{}) {
+func (l *AppLogger) Warnf(format string, args ...any) {
 	l.logger.Warn().Msgf(format, args...)
 }
-func (l *AppLogger) Errorf(format string, args ...interface{}) {
+func (l *AppLogger) Errorf(format string, args ...any) {
 	l.logger.Error().Msgf(format, args...)
 }
-func (l *AppLogger) Fatalf(format string, args ...interface{}) {
+func (l *AppLogger) Fatalf(format string, args ...any) {
 	l.logger.Fatal().Msgf(format, args...)
 	os.Exit(1)
 }
