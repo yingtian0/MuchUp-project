@@ -6,7 +6,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"MuchUp/app/utils"
+	"github.com/google/uuid"
 )
 
 type RoomID string
@@ -78,8 +78,8 @@ func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) 
 	}
 
 	return &Message{
-		ID:              MessageID(utils.GenerateUUID()),
-		ClientMessageID: new(utils.GenerateUUID()),
+		ID:              MessageID(uuid.NewString()),
+		ClientMessageID: new(uuid.NewString()),
 		SenderID:        senderID,
 		RoomID:          roomID,
 		Text:            &text,

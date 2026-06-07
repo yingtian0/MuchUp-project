@@ -9,7 +9,7 @@ import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
 	"MuchUp/app/internal/usecase/dto"
-	"MuchUp/app/utils"
+	"github.com/google/uuid"
 )
 
 type messageUsecase struct {
@@ -56,7 +56,7 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 
 	messageID := input.MessageID
 	if messageID == "" {
-		messageID = utils.GenerateUUID()
+		messageID = uuid.NewString()
 	}
 
 	message := &entity.Message{

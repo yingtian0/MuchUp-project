@@ -8,8 +8,8 @@ import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
 	llmv1 "MuchUp/app/proto/gen/go/llm/v1"
-	"MuchUp/app/utils"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -75,7 +75,7 @@ func (h *Handler) HandleRoomCreated(ctx context.Context, room *entity.Room, owne
 
 	content := response.GetContent()
 	message := &entity.Message{
-		ID:              entity.MessageID(utils.GenerateUUID()),
+		ID:              entity.MessageID(uuid.NewString()),
 		ClientMessageID: new("room-created"),
 		SenderID:        entity.UserID(aiAgentUserID),
 		RoomID:          room.ID,

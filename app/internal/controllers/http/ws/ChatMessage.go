@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"MuchUp/app/internal/usecase/dto"
-	"MuchUp/app/utils"
 
 	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -318,7 +318,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		EventType: dto.MessageEvent,
 		SenderID:  client.UserID,
 		RoomID:    roomID,
-		MessageID: utils.GenerateUUID(),
+		MessageID: uuid.NewString(),
 		Content:   content,
 		CreatedAt: time.Now(),
 	}
