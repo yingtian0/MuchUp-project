@@ -1,4 +1,4 @@
-package authzservice
+package authz
 
 import (
 	"crypto/rand"
@@ -9,15 +9,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var signingKey = mustLoadSigningKey()
-
 var tokenTTL = 1 * time.Hour
 
-func init() {
-	if v := os.Getenv("JWT_SECRET"); v != "" {
-		secretKey = []byte(v)
-	}
+var signingKey = loadSigningKey()
 
+func init() {
 	if v := os.Getenv("JWT_TTL"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
 			tokenTTL = d
@@ -25,7 +21,7 @@ func init() {
 	}
 }
 
-func mustLoadSigningKey() []byte {
+func loadSigningKey() []byte {
 	if value := os.Getenv("JWT_SECRET"); value != "" {
 		return []byte(value)
 	}
@@ -61,7 +57,7 @@ func IssueToken(userID, username string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signed, err := token.SignedString(secretKey)
+	signed, err := token.SignedString(signingKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}

@@ -81,7 +81,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: authz-service
+                      address: authz
                       port_value: 9000
 
     - name: app_grpc

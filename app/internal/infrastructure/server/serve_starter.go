@@ -1,9 +1,11 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	"MuchUp/app/config"
 	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
@@ -18,9 +20,11 @@ import (
 )
 
 func StartGRPCServer(cfg *config.Config, appLogger logger.Logger, grpcHandler *grpc_controller.GrpcHandler) {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
+	var listenConfig net.ListenConfig
+
+	lis, err := listenConfig.Listen(context.Background(), "tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
 	if err != nil {
-		appLogger.Fatal("Failed to listen for gRPC", err)
+		appLogger.WithError(err).Fatal("Failed to listen for gRPC")
 	}
 
 	s := grpc.NewServer()
@@ -33,9 +37,10 @@ func StartGRPCServer(cfg *config.Config, appLogger logger.Logger, grpcHandler *g
 	healthServer.SetServingStatus(chatv1.ChatService_ServiceDesc.ServiceName, grpc_health_v1.HealthCheckResponse_SERVING)
 	grpc_health_v1.RegisterHealthServer(s, healthServer)
 
-	appLogger.Info("gRPC server listening at " + lis.Addr().String())
+	appLogger.Infof("gRPC server listening at %s", lis.Addr().String())
+
 	if err := s.Serve(lis); err != nil {
-		appLogger.Fatal("Failed to serve gRPC", err)
+		appLogger.WithError(err).Fatal("Failed to serve gRPC")
 	}
 }
 
@@ -46,8 +51,15 @@ func StartHTTPServer(cfg *config.Config, appLogger logger.Logger, router *mux.Ro
 	}
 
 	serverAddr := fmt.Sprintf(":%s", httpPort)
-	appLogger.Info("HTTP server starting on " + serverAddr)
-	if err := http.ListenAndServe(serverAddr, router); err != nil {
-		appLogger.Fatal("Failed to start HTTP server", err)
+	appLogger.Infof("HTTP server starting on %s", serverAddr)
+
+	server := &http.Server{
+		Addr:              serverAddr,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		appLogger.WithError(err).Fatal("Failed to start HTTP server")
 	}
 }

@@ -80,10 +80,10 @@ direnv を使わずに一時的に開発環境へ入る場合は、次のコマ�
 nix develop
 ```
 
-Python 依存は `llm-service/pyproject.toml` を source of truth として uv で管理します。
+Python 依存は `llm/pyproject.toml` を source of truth として uv で管理します。
 
 ```sh
-cd llm-service
+cd llm
 uv sync
 uv run python main.py
 ```

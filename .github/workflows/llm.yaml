@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'llm-service/**'
+      - 'llm/**'
       - '.github/workflows/llm.yaml'
   pull_request:
     branches:
       - main
     paths:
-      - 'llm-service/**'
+      - 'llm/**'
       - '.github/workflows/llm.yaml'
 
 permissions:
@@ -22,19 +22,19 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: llm-service
+        working-directory: llm
     steps:
     - uses: actions/checkout@v4
     - name: Set up uv
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
-        working-directory: llm-service
+        working-directory: llm
 
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
-        python-version-file: llm-service/.python-version
+        python-version-file: llm/.python-version
 
     - name: Install dependencies
       run: uv sync --locked --dev
@@ -47,8 +47,7 @@ jobs:
 
     - name: Test
       # pytest はテストが1件も収集されないと終了コード5で失敗する。
-      # TODO:llm-service に実テストを追加したら、[$? -eq 5]を外して0件収集をCI失敗にする。
+      # TODO:llm に実テストを追加したら、[$? -eq 5]を外して0件収集をCI失敗にする。
       run: uv run pytest || [ $? -eq 5 ]
       env:
         PYTHONPATH: .
-

@@ -1,4 +1,4 @@
-# Auth Service (authz-service)
+# Auth Service (authz)
 
 ## 役割
 

@@ -30,27 +30,35 @@ func main() {
 	appLogger.Infof("config loaded http_port=%s grpc_port=%s db_host=%s db_name=%s", config.HTTPPort, config.GRPCPort, config.DBHost, config.DBName)
 
 	appLogger.Info("database connecting")
+
 	db, err := database.Connect(config)
 	if err != nil {
-		appLogger.Fatal("Failed to connect to database", err)
+		appLogger.WithError(err).Fatal("Failed to connect to database")
 	}
+
 	appLogger.Info("database connected")
 	appLogger.Info("running database migration")
+
 	if err = database.InitDB(db); err != nil {
 		appLogger.WithError(err).Fatal("database migration failed")
 	}
+
 	appLogger.Info("Database migration completed")
+
 	userRepo := repositories.NewUserRepository(db)
 	messageRepo := repositories.NewMessageRepository(db)
 	redisClient := goredis.NewClient(&goredis.Options{
 		Addr: config.GetRedisAddr(),
 	})
 	messageStreamStore := redisstore.NewMessageStreamStore(redisClient, 1000)
+
 	llmConn, err := grpc.NewClient(config.GetLLMAddr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		appLogger.Fatal("Failed to connect to llm service", err)
+		appLogger.WithError(err).Fatal("Failed to connect to llm service")
 	}
+
 	defer llmConn.Close()
+
 	userUsecase := user_service.NewUserUsecase(userRepo)
 	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
@@ -59,7 +67,8 @@ func main() {
 
 	HTTPRouter := RestHandler.SetupRouter()
 	HTTPRouter.Use(middleware.RequestMetrics(appLogger))
-	go server.StartGRPCServer(config, appLogger, grpcHandler)
-	server.StartHTTPServer(config, appLogger, HTTPRouter)
 
+	go server.StartGRPCServer(config, appLogger, grpcHandler)
+
+	server.StartHTTPServer(config, appLogger, HTTPRouter)
 }

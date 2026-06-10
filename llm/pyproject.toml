@@ -1,5 +1,5 @@
 [project]
-name = "muchup-llm-service"
+name = "muchup-llm"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [

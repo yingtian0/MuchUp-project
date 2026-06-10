@@ -4,11 +4,8 @@ import (
 	"MuchUp/app/internal/controllers/http/ws"
 	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
-	"os"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 type Handler struct {
@@ -18,29 +15,21 @@ type Handler struct {
 	hub            *ws.Hub
 }
 type Response struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
-	Message string      `json:"message,omitempty"`
+	Success bool   `json:"success"`
+	Data    any    `json:"data,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 type CreateUserRequest struct {
-	Name               string                 `json:"name" validate:"required,min=2,max=50"`
-	Email              string                 `json:"email" validate:"required,email"`
-	PasswordHash       string                 `json:"password" validate:"required,min=8"`
-	UsagePurpose       string                 `json:"usage_purpose"`
-	PersonalityProfile map[string]interface{} `json:"personality_profile"`
+	Name               string         `json:"name" validate:"required,min=2,max=50"`
+	Email              string         `json:"email" validate:"required,email"`
+	PasswordHash       string         `json:"password" validate:"required,min=8"`
+	UsagePurpose       string         `json:"usage_purpose"`
+	PersonalityProfile map[string]any `json:"personality_profile"`
 }
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
-}
-
-var googleOAuthConfig = &oauth2.Config{
-	ClientID:     os.Getenv("CLIENT_ID"),
-	ClientSecret: os.Getenv("CLIENT_SECRET"),
-	RedirectURL:  "https://localhost:8080/api/v1/auth/google/callback",
-	Scopes:       []string{"email", "openid"},
-	Endpoint:     google.Endpoint,
 }
 
 type CreateMessageRequest struct {

@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'authz-service/**'
+      - 'authz/**'
       - '.github/workflows/authz.yaml'
   pull_request:
     branches:
       - main
     paths:
-      - 'authz-service/**'
+      - 'authz/**'
       - '.github/workflows/authz.yaml'
 
 permissions:
@@ -22,14 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: authz-service
+        working-directory: authz
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version-file: authz-service/go.mod
+        go-version-file: authz/go.mod
 
     - name: Check go mod tidy
       run: |
@@ -45,5 +45,4 @@ jobs:
     - name: Lint
       uses: golangci/golangci-lint-action@v8
       with:
-        working-directory: authz-service
-
+        working-directory: authz

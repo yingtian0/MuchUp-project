@@ -1,11 +1,12 @@
 package entity
 
 import (
-	"MuchUp/app/utils"
 	"errors"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/google/uuid"
 )
 
 type RoomID string
@@ -59,22 +60,26 @@ type Message struct {
 
 func NewTextMessage(roomID RoomID, senderID UserID, text string, now time.Time) (*Message, error) {
 	text = strings.TrimSpace(text)
+
 	if roomID == "" {
 		return nil, errors.New("room_id is required")
 	}
+
 	if senderID == "" {
 		return nil, errors.New("sender_id is required")
 	}
+
 	if text == "" {
 		return nil, errors.New("text is required")
 	}
+
 	if utf8.RuneCountInString(text) > 1000 {
 		return nil, errors.New("text is too long")
 	}
 
 	return &Message{
-		ID:              MessageID(utils.GenerateUUID()),
-		ClientMessageID: utils.StringPtr(utils.GenerateUUID()),
+		ID:              MessageID(uuid.NewString()),
+		ClientMessageID: new(uuid.NewString()),
 		SenderID:        senderID,
 		RoomID:          roomID,
 		Text:            &text,
@@ -90,11 +95,14 @@ func (m *Message) CanSendMessage(senderID string) bool {
 	if string(m.SenderID) != senderID {
 		return false
 	}
+
 	if m.Text == nil && m.MediaURL == nil && m.StickerID == nil {
 		return false
 	}
+
 	if m.Text != nil && len(*m.Text) > 1000 {
 		return false
 	}
+
 	return true
 }

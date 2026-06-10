@@ -25,9 +25,10 @@ func (r *messageRepository) GetMessageByID(id string) (*entity.Message, error) {
 	if err := r.db.First(&msgSchema, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
+
 	return mapper.ToMessageEntity(&msgSchema), nil
 }
-func (r *messageRepository) GetMessagesByUserID(userID string) ([]*entity.Message, error) {
+func (r *messageRepository) GetMessagesByUserID(_ string) ([]*entity.Message, error) {
 	return nil, nil
 }
 func (r *messageRepository) UpdateMessage(message *entity.Message) error {
@@ -39,13 +40,16 @@ func (r *messageRepository) DeleteMessage(id string) error {
 }
 func (r *messageRepository) GetMessagesByRoom(roomID string, limit, offset int) ([]*entity.Message, error) {
 	var messagesSchema []schema.MessageSchema
+
 	err := r.db.Where("room_id = ?", roomID).Limit(limit).Offset(offset).Order("created_at DESC").Find(&messagesSchema).Error
 	if err != nil {
 		return nil, err
 	}
+
 	messages := make([]*entity.Message, len(messagesSchema))
 	for i, msgSchema := range messagesSchema {
 		messages[i] = mapper.ToMessageEntity(&msgSchema)
 	}
+
 	return messages, nil
 }

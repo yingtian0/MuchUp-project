@@ -1,10 +1,11 @@
 package redis
 
 import (
-	"MuchUp/app/internal/domain/repository"
 	"context"
 	"strconv"
 	"time"
+
+	"MuchUp/app/internal/domain/repository"
 
 	goredis "github.com/redis/go-redis/v9"
 )

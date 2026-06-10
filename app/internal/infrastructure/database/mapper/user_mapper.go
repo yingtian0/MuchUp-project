@@ -3,11 +3,9 @@ package mapper
 import (
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/infrastructure/database/schema"
-	"encoding/json"
 )
 
 func ToUserSchema(user *entity.UserProfile) *schema.UserSchema {
-
 	return &schema.UserSchema{
 		ID:                string(user.ID),
 		NickName:          user.NickName,
@@ -26,10 +24,6 @@ func ToUserSchema(user *entity.UserProfile) *schema.UserSchema {
 	}
 }
 func ToUserEntity(userSchema *schema.UserSchema) *entity.UserProfile {
-	var profile map[string]interface{}
-	if userSchema.PersonalityProfile != nil {
-		_ = json.Unmarshal(userSchema.PersonalityProfile, &profile)
-	}
 	return &entity.UserProfile{
 		ID:            entity.UserID(userSchema.ID),
 		NickName:      userSchema.NickName,

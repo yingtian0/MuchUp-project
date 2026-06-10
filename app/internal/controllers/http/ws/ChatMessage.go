@@ -1,8 +1,6 @@
 package ws
 
 import (
-	"MuchUp/app/internal/usecase/dto"
-	"MuchUp/app/utils"
 	"context"
 	"encoding/json"
 	"log"
@@ -10,10 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"MuchUp/app/internal/usecase/dto"
+
 	"MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/pkg/logger"
 	"MuchUp/app/pkg/middleware"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -21,7 +22,7 @@ import (
 // CheckOrigin が常に true なので、どの Origin からの接続も許可する。
 // 開発中は便利だが、本番ではセキュリティ上かなり緩い設定。
 var Upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
+	CheckOrigin: func(_ *http.Request) bool {
 		return true
 	},
 }
@@ -59,11 +60,11 @@ type ChatHandler struct {
 // WebSocket 上でやり取りする共通メッセージ形式。
 // Type でイベント種別を判定し、Data に実データを積む。
 type WebSocketMessage struct {
-	Type      string      `json:"type"`
-	Data      interface{} `json:"data"`
-	UserID    string      `json:"user_id,omitempty"`
-	RoomID    string      `json:"room_id,omitempty"`
-	Timestamp int64       `json:"timestamp,omitempty"`
+	Type      string `json:"type"`
+	Data      any    `json:"data"`
+	UserID    string `json:"user_id,omitempty"`
+	RoomID    string `json:"room_id,omitempty"`
+	Timestamp int64  `json:"timestamp,omitempty"`
 }
 
 // チャット本文をフロントへ返すときの整形済みメッセージ。
@@ -124,6 +125,7 @@ func (h *Hub) Run() {
 		// 全体ブロードキャスト
 		case message := <-h.Broadcast:
 			h.Mutex.RLock()
+
 			for client := range h.Clients {
 				select {
 				case client.Send <- message:
@@ -135,6 +137,7 @@ func (h *Hub) Run() {
 					delete(h.Clients, client)
 				}
 			}
+
 			h.Mutex.RUnlock()
 		}
 	}
@@ -211,6 +214,7 @@ func (c *Client) ReadPump(handler *ChatHandler) {
 	defer func() {
 		// 接続終了時は Hub に解除通知し、コネクションを閉じる
 		c.Hub.Unregister <- c
+
 		c.Conn.Close()
 	}()
 
@@ -221,6 +225,7 @@ func (c *Client) ReadPump(handler *ChatHandler) {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("WebSocket error: %v", err)
 			}
+
 			break
 		}
 
@@ -258,7 +263,9 @@ func (c *Client) WritePump() {
 	}
 
 	// Send チャネルが閉じられたら CloseMessage を送って終了
-	c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+	if err := c.Conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
+		log.Printf("WebSocket close message error: %v", err)
+	}
 }
 
 // チャットメッセージ受信時の処理。
@@ -269,19 +276,35 @@ func (c *Client) WritePump() {
 // 4. ユーザー名を取得
 // 5. フロント向けレスポンスを作り配信
 func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMessage) {
-	// Data は interface{} なので map として解釈する
-	data, ok := wsMessage.Data.(map[string]interface{})
+	// Data は any なので map として解釈する
+	data, ok := wsMessage.Data.(map[string]any)
 	if !ok {
 		return
 	}
 
 	// フロントから渡された値を取り出す
-	content, _ := data["content"].(string)
-	recipientId, _ := data["recipientId"].(string)
-	roomID, _ := data["room_id"].(string)
-	if roomID == "" {
-		roomID, _ = data["roomId"].(string)
+	content, ok := data["content"].(string)
+	if !ok {
+		content = ""
 	}
+
+	recipientID, ok := data["recipientId"].(string)
+	if !ok {
+		recipientID = ""
+	}
+
+	roomID, ok := data["room_id"].(string)
+	if !ok {
+		roomID = ""
+	}
+
+	if roomID == "" {
+		roomID, ok = data["roomId"].(string)
+		if !ok {
+			roomID = ""
+		}
+	}
+
 	if roomID == "" {
 		roomID = client.RoomID
 	}
@@ -295,7 +318,7 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		EventType: dto.MessageEvent,
 		SenderID:  client.UserID,
 		RoomID:    roomID,
-		MessageID: utils.GenerateUUID(),
+		MessageID: uuid.NewString(),
 		Content:   content,
 		CreatedAt: time.Now(),
 	}
@@ -332,8 +355,8 @@ func (ch *ChatHandler) HandleChatMessage(client *Client, wsMessage WebSocketMess
 		// ここは messageType の値次第で送信先を変える意図だが、
 		// 実際には messageType == "chat_message" のため、
 		// この条件には入らない可能性が高い
-		if messageType == "direct" && recipientId != "" {
-			ch.Hub.SendToUser(responseData, recipientId)
+		if messageType == "direct" && recipientID != "" {
+			ch.Hub.SendToUser(responseData, recipientID)
 		} else if roomID != "" {
 			ch.Hub.BroadcastToRoom(responseData, roomID)
 		}
@@ -365,7 +388,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 	response := WebSocketMessage{
 		Type:   "typing",
 		UserID: client.UserID,
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"user_id": client.UserID,
 			"room_id": client.RoomID,
 			"typing":  wsMessage.Data,
@@ -382,7 +405,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 
 // TODO: 実装変更予定のためコメントアウト
 //func (ch *ChatHandler) HandleJoinRoom(client *Client, wsMessage WebSocketMessage) {
-//	data, ok := wsMessage.Data.(map[string]interface{})
+//	data, ok := wsMessage.Data.(map[string]any)
 //	if !ok {
 //		return
 //	}
@@ -441,7 +464,7 @@ func (ch *ChatHandler) HandleTyping(client *Client, wsMessage WebSocketMessage) 
 //	if client.UserID != "ai_agent" && newRoomID != "" {
 //		aiMessage := WebSocketMessage{
 //			Type: "new_message",
-//			Data: map[string]interface{}{
+//			Data: map[string]any{
 //				"id":        "ai_intro",
 //				"content":   "こんにちは!私はこのルームをサポートするAIです。皆さんが仲良くなれるようにお手伝いします。何か質問があれば気軽に話しかけてくださいね!",
 //				"user_id":   "ai_agent",

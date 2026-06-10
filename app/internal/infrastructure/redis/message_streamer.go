@@ -1,12 +1,13 @@
 package redis
 
 import (
-	"MuchUp/app/internal/domain/entity"
-	"MuchUp/app/internal/domain/repository"
 	"context"
 	"fmt"
 	"strconv"
 	"time"
+
+	"MuchUp/app/internal/domain/entity"
+	"MuchUp/app/internal/domain/repository"
 
 	goredis "github.com/redis/go-redis/v9"
 )
@@ -42,6 +43,7 @@ func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.
 		args.MaxLen = s.maxLen
 		args.Approx = true
 	}
+
 	return s.client.XAdd(ctx, args).Result()
 }
 
@@ -57,8 +59,10 @@ func (s *MessageStreamStore) GetRecentMessages(ctx context.Context, roomID strin
 		if err != nil {
 			return nil, err
 		}
+
 		messages = append(messages, message)
 	}
+
 	return messages, nil
 }
 
@@ -79,8 +83,10 @@ func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastM
 		if err != nil {
 			return nil, err
 		}
+
 		messages = append(messages, message)
 	}
+
 	return messages, nil
 }
 
@@ -93,6 +99,7 @@ func streamMessageToEntity(stream goredis.XMessage) (*entity.Message, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	updatedAt, err := parseUnixMilli(stream.Values["updated_at"])
 	if err != nil {
 		return nil, err
@@ -109,9 +116,11 @@ func streamMessageToEntity(stream goredis.XMessage) (*entity.Message, error) {
 	if text := toString(stream.Values["text"]); text != "" {
 		message.Text = &text
 	}
+
 	if image := toString(stream.Values["image"]); image != "" {
 		message.MediaURL = &image
 	}
+
 	if sticker := toString(stream.Values["sticker"]); sticker != "" {
 		message.StickerID = &sticker
 	}
@@ -128,6 +137,7 @@ func parseUnixMilli(value any) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
+
 	return time.UnixMilli(unixMilli), nil
 }
 
@@ -135,6 +145,7 @@ func derefString(value *string) string {
 	if value == nil {
 		return ""
 	}
+
 	return *value
 }
 
@@ -156,10 +167,11 @@ func toStringPointer(value any) *string {
 	if s == "" {
 		return nil
 	}
+
 	return &s
 }
 
-func streamKey(roomID entity.RoomID) string {
+func streamKey(_ entity.RoomID) string {
 	// TODO: mockとして初期値をreturnしてる
 	return ""
 }

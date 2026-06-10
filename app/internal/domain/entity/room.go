@@ -21,6 +21,7 @@ type Room struct {
 	Capacity           int
 	Members            map[UserID]*RoomMember
 	CreatedBy          *UserID
+	CreatedAt          time.Time
 	ActivatedAt        *time.Time
 	LastMessageAt      *time.Time
 	LastAIIntervenedAt *time.Time
