@@ -7,9 +7,9 @@ import (
 )
 
 type MessageSchema struct {
-	ID        string `gorm:"type:uuid;primaryKey"`
-	Text      string `gorm:"type:text;not null"`
-	SenderID  *string
+	ID        string     `gorm:"type:uuid;primaryKey"`
+	Text      string     `gorm:"type:text;not null"`
+	SenderID  *string    `gorm:"type:uuid"`
 	RoomID    string     `gorm:"type:uuid"`
 	Room      RoomSchema `gorm:"foreignKey:RoomID"`
 	CreatedAt time.Time
