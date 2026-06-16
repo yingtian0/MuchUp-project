@@ -22,7 +22,6 @@ docker compose version
 | `app` | Go の API サーバー | コンテナ内で HTTP `8080`、gRPC `9000` を listen |
 | `db` | PostgreSQL 16 | ホスト側の `${DB_PORT}` に公開 |
 
-`app` の HTTP/gRPC ポートは、現状の `compose.yaml` ではホスト側に公開されていません。ホストから API に直接アクセスしたい場合は、`app` サービスに `ports` を追加してください。
 
 ```yaml
 services:
