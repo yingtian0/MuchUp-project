@@ -36,7 +36,7 @@ type UserSchema struct {
 	UpdatedAt              time.Time
 	DeletedAt              gorm.DeletedAt  `gorm:"index"`
 	Rooms                  []RoomSchema    `gorm:"many2many:user_rooms;"`
-	Messages               []MessageSchema `gorm:"foreignKey:UserID"`
+	Messages               []MessageSchema `gorm:"foreignKey:SenderID"`
 }
 
 func (UserSchema) TableName() string {
