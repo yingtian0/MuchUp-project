@@ -23,14 +23,6 @@ docker compose version
 | `db` | PostgreSQL 16 | ホスト側の `${DB_PORT}` に公開 |
 
 
-```yaml
-services:
-  app:
-    ports:
-      - "8080:8080"
-      - "9000:9000"
-```
-
 ## `.env` を作成する
 
 `compose.yaml` は環境変数を参照するため、リポジトリ直下に `.env` を作成します。
