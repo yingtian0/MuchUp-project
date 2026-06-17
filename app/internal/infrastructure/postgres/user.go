@@ -1,13 +1,45 @@
 package postgres
 
 import (
+	"context"
+
+	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type userRepository struct {
-	repository.UserRepository
+	db *pgxpool.Pool
 }
 
-func NewUserRepository() repository.UserRepository {
-	return &userRepository{}
+func NewUserRepository(db *pgxpool.Pool) repository.UserRepository {
+	return &userRepository{db: db}
+}
+func (repo *userRepository) CreateUser(_ context.Context, _ *entity.UserProfile) error {
+	return ErrNotImplemented
+}
+
+func (repo *userRepository) GetUserByID(_ context.Context, _ string) (*entity.UserProfile, error) {
+	return nil, ErrNotImplemented
+}
+
+func (repo *userRepository) UpdateUser(_ context.Context, _ *entity.UserProfile) error {
+	return ErrNotImplemented
+}
+
+func (repo *userRepository) DeleteUser(_ context.Context, _ string) error {
+	return ErrNotImplemented
+}
+
+func (repo *userRepository) GetUsers(_ context.Context, _, _ int) ([]*entity.UserProfile, error) {
+	return nil, ErrNotImplemented
+}
+
+func (repo *userRepository) GetUserByEmail(_ context.Context, _ string) (*entity.UserProfile, error) {
+	return nil, ErrNotImplemented
+}
+
+func (repo *userRepository) GetUsersByRoom(_ context.Context, _ string) ([]*entity.UserProfile, error) {
+	return nil, ErrNotImplemented
 }

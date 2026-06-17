@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"MuchUp/app/config"
 	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
@@ -23,17 +25,11 @@ import (
 // @host localhost:8080
 // @Basepath /api/v1
 func main() {
+	ctx := context.Background()
 	config := config.LoadConfig()
 	appLogger := logger.NewLogger()
 	appLogger.Info("loading conifg")
 	appLogger.Infof("config loaded http_port=%s grpc_port=%s db_host=%s db_name=%s", config.HTTPPort, config.GRPCPort, config.DBHost, config.DBName)
-
-	appLogger.Info("database connecting")
-
-	appLogger.Info("database connected")
-	appLogger.Info("running database migration")
-
-	appLogger.Info("Database migration completed")
 
 	redisClient := goredis.NewClient(&goredis.Options{
 		Addr: config.GetRedisAddr(),
@@ -47,8 +43,18 @@ func main() {
 
 	defer llmConn.Close()
 
-	userRepository := postgres.NewUserRepository()
-	messageRepository := postgres.NewMessageRepository()
+	appLogger.Info("database connecting")
+
+	db, err := postgres.Connect(ctx, config)
+	if err != nil {
+		appLogger.WithError(err).Fatal("Failed to connect to database")
+	}
+	defer db.Close()
+
+	appLogger.Info("database connected")
+
+	userRepository := postgres.NewUserRepository(db)
+	messageRepository := postgres.NewMessageRepository(db)
 
 	userUsecase := user_service.NewUserUsecase(userRepository)
 	messageUsecase := message_service.NewMessageUsecase(messageRepository, userRepository, messageStreamStore)
