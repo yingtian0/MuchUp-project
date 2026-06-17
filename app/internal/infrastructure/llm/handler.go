@@ -6,7 +6,7 @@ import (
 
 	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
-	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/store"
 	llmv1 "MuchUp/app/proto/gen/go/llm/v1"
 
 	"github.com/google/uuid"
@@ -17,12 +17,12 @@ const aiAgentUserID = "ai_agent"
 
 type Handler struct {
 	client        llmv1.LLMServiceClient
-	messageStream repository.MessageStreamStore
+	messageStream store.MessageStreamStore
 }
 
 var _ usecase.LLMHandler = (*Handler)(nil)
 
-func NewHandler(conn *grpc.ClientConn, messageStream repository.MessageStreamStore) *Handler {
+func NewHandler(conn *grpc.ClientConn, messageStream store.MessageStreamStore) *Handler {
 	return &Handler{
 		client:        llmv1.NewLLMServiceClient(conn),
 		messageStream: messageStream,

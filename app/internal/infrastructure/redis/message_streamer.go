@@ -7,26 +7,26 @@ import (
 	"time"
 
 	"MuchUp/app/internal/domain/entity"
-	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/store"
 
 	goredis "github.com/redis/go-redis/v9"
 )
 
-type MessageStreamStore struct {
+type messageStreamStore struct {
 	client goredis.Cmdable
 	maxLen int64
 }
 
-var _ repository.MessageStreamStore = (*MessageStreamStore)(nil)
+var _ store.MessageStreamStore = (*messageStreamStore)(nil)
 
-func NewMessageStreamStore(client goredis.Cmdable, maxLen int64) *MessageStreamStore {
-	return &MessageStreamStore{
+func NewMessageStreamStore(client goredis.Cmdable, maxLen int64) store.MessageStreamStore {
+	return &messageStreamStore{
 		client: client,
 		maxLen: maxLen,
 	}
 }
 
-func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.Message) (string, error) {
+func (s *messageStreamStore) AppendMessage(ctx context.Context, message *entity.Message) (string, error) {
 	args := &goredis.XAddArgs{
 		Stream: streamKey(message.RoomID),
 		Values: map[string]any{
@@ -47,7 +47,7 @@ func (s *MessageStreamStore) AppendMessage(ctx context.Context, message *entity.
 	return s.client.XAdd(ctx, args).Result()
 }
 
-func (s *MessageStreamStore) GetRecentMessages(ctx context.Context, roomID string, count int64) ([]*entity.Message, error) {
+func (s *messageStreamStore) GetRecentMessages(ctx context.Context, roomID string, count int64) ([]*entity.Message, error) {
 	streams, err := s.client.XRevRangeN(ctx, streamKey(entity.RoomID(roomID)), "+", "-", count).Result()
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *MessageStreamStore) GetRecentMessages(ctx context.Context, roomID strin
 	return messages, nil
 }
 
-func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastMessageID string, count int64) ([]*entity.Message, error) {
+func (s *messageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastMessageID string, count int64) ([]*entity.Message, error) {
 	start := "-"
 	if lastMessageID != "" {
 		start = "(" + lastMessageID
@@ -90,7 +90,7 @@ func (s *MessageStreamStore) GetMessagesAfter(ctx context.Context, roomID, lastM
 	return messages, nil
 }
 
-func (s *MessageStreamStore) DeleteMessageHistory(ctx context.Context, roomID string) error {
+func (s *messageStreamStore) DeleteMessageHistory(ctx context.Context, roomID string) error {
 	return s.client.Del(ctx, streamKey(entity.RoomID(roomID))).Err()
 }
 

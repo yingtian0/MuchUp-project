@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"context"
+
 	"MuchUp/app/internal/domain/entity"
 
 	"github.com/stretchr/testify/mock"
@@ -10,12 +12,12 @@ type MockUserRepository struct {
 	mock.Mock
 }
 
-func (m *MockUserRepository) CreateUser(user *entity.UserProfile) error {
-	args := m.Called(user)
+func (m *MockUserRepository) CreateUser(ctx context.Context, user *entity.UserProfile) error {
+	args := m.Called(ctx, user)
 	return args.Error(0)
 }
-func (m *MockUserRepository) GetUserByID(id string) (*entity.UserProfile, error) {
-	args := m.Called(id)
+func (m *MockUserRepository) GetUserByID(ctx context.Context, id string) (*entity.UserProfile, error) {
+	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -27,16 +29,16 @@ func (m *MockUserRepository) GetUserByID(id string) (*entity.UserProfile, error)
 
 	return user, args.Error(1)
 }
-func (m *MockUserRepository) UpdateUser(user *entity.UserProfile) error {
-	args := m.Called(user)
+func (m *MockUserRepository) UpdateUser(ctx context.Context, user *entity.UserProfile) error {
+	args := m.Called(ctx, user)
 	return args.Error(0)
 }
-func (m *MockUserRepository) DeleteUser(id string) error {
-	args := m.Called(id)
+func (m *MockUserRepository) DeleteUser(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
 	return args.Error(0)
 }
-func (m *MockUserRepository) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
-	args := m.Called(limit, offset)
+func (m *MockUserRepository) GetUsers(ctx context.Context, limit, offset int) ([]*entity.UserProfile, error) {
+	args := m.Called(ctx, limit, offset)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -48,8 +50,8 @@ func (m *MockUserRepository) GetUsers(limit, offset int) ([]*entity.UserProfile,
 
 	return users, args.Error(1)
 }
-func (m *MockUserRepository) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
-	args := m.Called(roomID)
+func (m *MockUserRepository) GetUsersByRoom(ctx context.Context, roomID string) ([]*entity.UserProfile, error) {
+	args := m.Called(ctx, roomID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -61,8 +63,8 @@ func (m *MockUserRepository) GetUsersByRoom(roomID string) ([]*entity.UserProfil
 
 	return users, args.Error(1)
 }
-func (m *MockUserRepository) GetUserByEmail(email string) (*entity.UserProfile, error) {
-	args := m.Called(email)
+func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (*entity.UserProfile, error) {
+	args := m.Called(ctx, email)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

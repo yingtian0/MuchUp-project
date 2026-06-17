@@ -8,6 +8,7 @@ import (
 	usecase "MuchUp/app/internal/controllers/usecase"
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
+	"MuchUp/app/internal/domain/store"
 	"MuchUp/app/internal/usecase/dto"
 
 	"github.com/google/uuid"
@@ -16,14 +17,14 @@ import (
 type messageUsecase struct {
 	messageRepo   repository.MessageRepository
 	userRepo      repository.UserRepository
-	messageStream repository.MessageStreamStore
+	messageStream store.MessageStreamStore
 }
 
 // TODO: メッセージ関連依存の初期化をこのコンストラクタに集約していく
 func NewMessageUsecase(
 	messageRepo repository.MessageRepository,
 	userRepo repository.UserRepository,
-	messageStream repository.MessageStreamStore,
+	messageStream store.MessageStreamStore,
 ) usecase.MessageUsecase {
 	return &messageUsecase{
 		messageRepo:   messageRepo,
@@ -45,7 +46,7 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 		return errors.New("content is required")
 	}
 
-	_, err := u.userRepo.GetUserByID(input.SenderID)
+	_, err := u.userRepo.GetUserByID(ctx, input.SenderID)
 	if err != nil {
 		return err
 	}
@@ -75,11 +76,11 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 }
 
 func (u *messageUsecase) GetMessage(id string) (*entity.Message, error) {
-	return u.messageRepo.GetMessageByID(id)
+	return u.messageRepo.GetMessageByID(context.Background(), id)
 }
 
 func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message, error) {
-	if err := u.messageRepo.CreateMessage(message); err != nil {
+	if err := u.messageRepo.CreateMessage(context.Background(), message); err != nil {
 		return nil, err
 	}
 
@@ -87,7 +88,7 @@ func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message
 }
 
 func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message, error) {
-	if err := u.messageRepo.UpdateMessage(message); err != nil {
+	if err := u.messageRepo.UpdateMessage(context.Background(), message); err != nil {
 		return nil, err
 	}
 
@@ -95,5 +96,5 @@ func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message
 }
 
 func (u *messageUsecase) DeleteMessage(id string) error {
-	return u.messageRepo.DeleteMessage(id)
+	return u.messageRepo.DeleteMessage(context.Background(), id)
 }
