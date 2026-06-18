@@ -5,16 +5,15 @@ import (
 
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"MuchUp/app/sqlc"
 )
 
 type roomRepository struct {
-	db *pgxpool.Pool
+	q *sqlc.Queries
 }
 
-func NewRoomRepository(db *pgxpool.Pool) repository.RoomRepository {
-	return &roomRepository{db: db}
+func NewRoomRepository(db sqlc.DBTX) repository.RoomRepository {
+	return &roomRepository{q: sqlc.New(db)}
 }
 
 func (repo *roomRepository) CreateRoom(_ context.Context, _ *entity.Room) (*entity.Room, error) {

@@ -5,16 +5,15 @@ import (
 
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"MuchUp/app/sqlc"
 )
 
 type userRepository struct {
-	db *pgxpool.Pool
+	q *sqlc.Queries
 }
 
-func NewUserRepository(db *pgxpool.Pool) repository.UserRepository {
-	return &userRepository{db: db}
+func NewUserRepository(db sqlc.DBTX) repository.UserRepository {
+	return &userRepository{q: sqlc.New(db)}
 }
 func (repo *userRepository) CreateUser(_ context.Context, _ *entity.UserProfile) error {
 	return ErrNotImplemented

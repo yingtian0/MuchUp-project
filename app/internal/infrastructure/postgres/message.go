@@ -5,16 +5,15 @@ import (
 
 	"MuchUp/app/internal/domain/entity"
 	"MuchUp/app/internal/domain/repository"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"MuchUp/app/sqlc"
 )
 
 type messageRepository struct {
-	db *pgxpool.Pool
+	q *sqlc.Queries
 }
 
-func NewMessageRepository(db *pgxpool.Pool) repository.MessageRepository {
-	return &messageRepository{db: db}
+func NewMessageRepository(db sqlc.DBTX) repository.MessageRepository {
+	return &messageRepository{q: sqlc.New(db)}
 }
 
 func (repo *messageRepository) CreateMessage(_ context.Context, _ *entity.Message) error {
