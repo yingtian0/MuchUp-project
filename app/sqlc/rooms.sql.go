@@ -11,48 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createRoom = `-- name: CreateRoom :one
-INSERT INTO rooms (
-    type,
-    status,
-    capacity,
-    created_by
-) VALUES (
-    $1, $2, $3, $4
-)
-RETURNING id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
-`
-
-type CreateRoomParams struct {
-	Type      string
-	Status    string
-	Capacity  int32
-	CreatedBy pgtype.UUID
-}
-
-func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
-	row := q.db.QueryRow(ctx, createRoom,
-		arg.Type,
-		arg.Status,
-		arg.Capacity,
-		arg.CreatedBy,
-	)
-	var i Room
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Status,
-		&i.Capacity,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.ActivatedAt,
-		&i.ClosedAt,
-		&i.LastMessageAt,
-		&i.LastAiIntervenedAt,
-	)
-	return i, err
-}
-
 const deleteRoom = `-- name: DeleteRoom :exec
 DELETE FROM rooms
 WHERE id = $1
@@ -63,31 +21,7 @@ func (q *Queries) DeleteRoom(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
-const getRoomByID = `-- name: GetRoomByID :one
-SELECT id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
-FROM rooms
-WHERE id = $1
-`
-
-func (q *Queries) GetRoomByID(ctx context.Context, id pgtype.UUID) (Room, error) {
-	row := q.db.QueryRow(ctx, getRoomByID, id)
-	var i Room
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Status,
-		&i.Capacity,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.ActivatedAt,
-		&i.ClosedAt,
-		&i.LastMessageAt,
-		&i.LastAiIntervenedAt,
-	)
-	return i, err
-}
-
-const listRoomsByUserID = `-- name: ListRoomsByUserID :many
+const findAllRoomsByUserID = `-- name: FindAllRoomsByUserID :many
 SELECT r.id, r.type, r.status, r.capacity, r.created_by, r.created_at, r.activated_at, r.closed_at, r.last_message_at, r.last_ai_intervened_at
 FROM rooms r
 JOIN room_members rm ON rm.room_id = r.id
@@ -95,8 +29,8 @@ WHERE rm.user_id = $1
 ORDER BY COALESCE(r.last_message_at, r.created_at) DESC
 `
 
-func (q *Queries) ListRoomsByUserID(ctx context.Context, userID pgtype.UUID) ([]Room, error) {
-	rows, err := q.db.Query(ctx, listRoomsByUserID, userID)
+func (q *Queries) FindAllRoomsByUserID(ctx context.Context, userID pgtype.UUID) ([]Room, error) {
+	rows, err := q.db.Query(ctx, findAllRoomsByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -126,45 +60,114 @@ func (q *Queries) ListRoomsByUserID(ctx context.Context, userID pgtype.UUID) ([]
 	return items, nil
 }
 
-const touchRoomLastMessageAt = `-- name: TouchRoomLastMessageAt :exec
-UPDATE rooms
-SET last_message_at = $2
+const findRoomByID = `-- name: FindRoomByID :one
+SELECT id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
+FROM rooms
 WHERE id = $1
 `
 
-type TouchRoomLastMessageAtParams struct {
-	ID            pgtype.UUID
-	LastMessageAt pgtype.Timestamptz
+func (q *Queries) FindRoomByID(ctx context.Context, id pgtype.UUID) (Room, error) {
+	row := q.db.QueryRow(ctx, findRoomByID, id)
+	var i Room
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.Status,
+		&i.Capacity,
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.ActivatedAt,
+		&i.ClosedAt,
+		&i.LastMessageAt,
+		&i.LastAiIntervenedAt,
+	)
+	return i, err
 }
 
-func (q *Queries) TouchRoomLastMessageAt(ctx context.Context, arg TouchRoomLastMessageAtParams) error {
-	_, err := q.db.Exec(ctx, touchRoomLastMessageAt, arg.ID, arg.LastMessageAt)
-	return err
+const insertRoom = `-- name: InsertRoom :one
+INSERT INTO rooms (
+    type,
+    status,
+    capacity,
+    created_by
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
+`
+
+type InsertRoomParams struct {
+	Type      string
+	Status    string
+	Capacity  int32
+	CreatedBy pgtype.UUID
 }
 
-const updateRoomStatus = `-- name: UpdateRoomStatus :one
+func (q *Queries) InsertRoom(ctx context.Context, arg InsertRoomParams) (Room, error) {
+	row := q.db.QueryRow(ctx, insertRoom,
+		arg.Type,
+		arg.Status,
+		arg.Capacity,
+		arg.CreatedBy,
+	)
+	var i Room
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.Status,
+		&i.Capacity,
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.ActivatedAt,
+		&i.ClosedAt,
+		&i.LastMessageAt,
+		&i.LastAiIntervenedAt,
+	)
+	return i, err
+}
+
+const updateRoom = `-- name: UpdateRoom :one
 UPDATE rooms
 SET
     status = $2,
+    type = $3,
+    capacity = $4,
     activated_at = CASE
         WHEN $2 = 'active' AND activated_at IS NULL THEN now()
-        ELSE activated_at
+        ELSE $5
     END,
     closed_at = CASE
         WHEN $2 = 'closed' AND closed_at IS NULL THEN now()
-        ELSE closed_at
-    END
+        ELSE $6
+    END,
+    last_message_at = $7,
+    last_ai_intervened_at = $8
 WHERE id = $1
 RETURNING id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
 `
 
-type UpdateRoomStatusParams struct {
-	ID     pgtype.UUID
-	Status string
+type UpdateRoomParams struct {
+	ID                 pgtype.UUID
+	Status             string
+	Type               string
+	Capacity           int32
+	ActivatedAt        pgtype.Timestamptz
+	ClosedAt           pgtype.Timestamptz
+	LastMessageAt      pgtype.Timestamptz
+	LastAiIntervenedAt pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateRoomStatus(ctx context.Context, arg UpdateRoomStatusParams) (Room, error) {
-	row := q.db.QueryRow(ctx, updateRoomStatus, arg.ID, arg.Status)
+func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error) {
+	row := q.db.QueryRow(ctx, updateRoom,
+		arg.ID,
+		arg.Status,
+		arg.Type,
+		arg.Capacity,
+		arg.ActivatedAt,
+		arg.ClosedAt,
+		arg.LastMessageAt,
+		arg.LastAiIntervenedAt,
+	)
 	var i Room
 	err := row.Scan(
 		&i.ID,

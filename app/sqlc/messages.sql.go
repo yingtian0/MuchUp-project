@@ -11,7 +11,169 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createMessage = `-- name: CreateMessage :one
+const deleteMessage = `-- name: DeleteMessage :one
+UPDATE messages
+SET
+    status = 'DELETED',
+    deleted_at = now(),
+    updated_at = now()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
+`
+
+func (q *Queries) DeleteMessage(ctx context.Context, id pgtype.UUID) (Message, error) {
+	row := q.db.QueryRow(ctx, deleteMessage, id)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.RoomID,
+		&i.SenderID,
+		&i.SenderType,
+		&i.Kind,
+		&i.Status,
+		&i.Text,
+		&i.MediaUrl,
+		&i.StickerID,
+		&i.StreamID,
+		&i.Sequence,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const findAllMessagesByRoom = `-- name: FindAllMessagesByRoom :many
+SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
+FROM messages
+WHERE room_id = $1
+  AND deleted_at IS NULL
+ORDER BY created_at ASC, id ASC
+LIMIT $2 OFFSET $3
+`
+
+type FindAllMessagesByRoomParams struct {
+	RoomID pgtype.UUID
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) FindAllMessagesByRoom(ctx context.Context, arg FindAllMessagesByRoomParams) ([]Message, error) {
+	rows, err := q.db.Query(ctx, findAllMessagesByRoom, arg.RoomID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoomID,
+			&i.SenderID,
+			&i.SenderType,
+			&i.Kind,
+			&i.Status,
+			&i.Text,
+			&i.MediaUrl,
+			&i.StickerID,
+			&i.StreamID,
+			&i.Sequence,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findAllMessagesByUserID = `-- name: FindAllMessagesByUserID :many
+SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
+FROM messages
+WHERE sender_id = $1
+  AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type FindAllMessagesByUserIDParams struct {
+	SenderID pgtype.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) FindAllMessagesByUserID(ctx context.Context, arg FindAllMessagesByUserIDParams) ([]Message, error) {
+	rows, err := q.db.Query(ctx, findAllMessagesByUserID, arg.SenderID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoomID,
+			&i.SenderID,
+			&i.SenderType,
+			&i.Kind,
+			&i.Status,
+			&i.Text,
+			&i.MediaUrl,
+			&i.StickerID,
+			&i.StreamID,
+			&i.Sequence,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findMessageByID = `-- name: FindMessageByID :one
+SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
+FROM messages
+WHERE id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) FindMessageByID(ctx context.Context, id pgtype.UUID) (Message, error) {
+	row := q.db.QueryRow(ctx, findMessageByID, id)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.RoomID,
+		&i.SenderID,
+		&i.SenderType,
+		&i.Kind,
+		&i.Status,
+		&i.Text,
+		&i.MediaUrl,
+		&i.StickerID,
+		&i.StreamID,
+		&i.Sequence,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const insertMessage = `-- name: InsertMessage :one
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -29,7 +191,7 @@ INSERT INTO messages (
 RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
-type CreateMessageParams struct {
+type InsertMessageParams struct {
 	RoomID     pgtype.UUID
 	SenderID   pgtype.UUID
 	SenderType string
@@ -42,8 +204,8 @@ type CreateMessageParams struct {
 	Sequence   pgtype.Int8
 }
 
-func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
-	row := q.db.QueryRow(ctx, createMessage,
+func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (Message, error) {
+	row := q.db.QueryRow(ctx, insertMessage,
 		arg.RoomID,
 		arg.SenderID,
 		arg.SenderType,
@@ -75,7 +237,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 	return i, err
 }
 
-const createTextMessage = `-- name: CreateTextMessage :one
+const insertTextMessage = `-- name: InsertTextMessage :one
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -91,7 +253,7 @@ INSERT INTO messages (
 RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
-type CreateTextMessageParams struct {
+type InsertTextMessageParams struct {
 	RoomID     pgtype.UUID
 	SenderID   pgtype.UUID
 	SenderType string
@@ -100,8 +262,8 @@ type CreateTextMessageParams struct {
 	Sequence   pgtype.Int8
 }
 
-func (q *Queries) CreateTextMessage(ctx context.Context, arg CreateTextMessageParams) (Message, error) {
-	row := q.db.QueryRow(ctx, createTextMessage,
+func (q *Queries) InsertTextMessage(ctx context.Context, arg InsertTextMessageParams) (Message, error) {
+	row := q.db.QueryRow(ctx, insertTextMessage,
 		arg.RoomID,
 		arg.SenderID,
 		arg.SenderType,
@@ -129,185 +291,41 @@ func (q *Queries) CreateTextMessage(ctx context.Context, arg CreateTextMessagePa
 	return i, err
 }
 
-const getMessageByID = `-- name: GetMessageByID :one
-SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
-FROM messages
-WHERE id = $1
-  AND deleted_at IS NULL
-`
-
-func (q *Queries) GetMessageByID(ctx context.Context, id pgtype.UUID) (Message, error) {
-	row := q.db.QueryRow(ctx, getMessageByID, id)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const listMessagesByRoom = `-- name: ListMessagesByRoom :many
-SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
-FROM messages
-WHERE room_id = $1
-  AND deleted_at IS NULL
-ORDER BY created_at ASC, id ASC
-LIMIT $2 OFFSET $3
-`
-
-type ListMessagesByRoomParams struct {
-	RoomID pgtype.UUID
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) ListMessagesByRoom(ctx context.Context, arg ListMessagesByRoomParams) ([]Message, error) {
-	rows, err := q.db.Query(ctx, listMessagesByRoom, arg.RoomID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Message
-	for rows.Next() {
-		var i Message
-		if err := rows.Scan(
-			&i.ID,
-			&i.RoomID,
-			&i.SenderID,
-			&i.SenderType,
-			&i.Kind,
-			&i.Status,
-			&i.Text,
-			&i.MediaUrl,
-			&i.StickerID,
-			&i.StreamID,
-			&i.Sequence,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listMessagesByUserID = `-- name: ListMessagesByUserID :many
-SELECT id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
-FROM messages
-WHERE sender_id = $1
-  AND deleted_at IS NULL
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
-`
-
-type ListMessagesByUserIDParams struct {
-	SenderID pgtype.UUID
-	Limit    int32
-	Offset   int32
-}
-
-func (q *Queries) ListMessagesByUserID(ctx context.Context, arg ListMessagesByUserIDParams) ([]Message, error) {
-	rows, err := q.db.Query(ctx, listMessagesByUserID, arg.SenderID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Message
-	for rows.Next() {
-		var i Message
-		if err := rows.Scan(
-			&i.ID,
-			&i.RoomID,
-			&i.SenderID,
-			&i.SenderType,
-			&i.Kind,
-			&i.Status,
-			&i.Text,
-			&i.MediaUrl,
-			&i.StickerID,
-			&i.StreamID,
-			&i.Sequence,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const softDeleteMessage = `-- name: SoftDeleteMessage :one
-UPDATE messages
-SET
-    status = 'DELETED',
-    deleted_at = now(),
-    updated_at = now()
-WHERE id = $1
-  AND deleted_at IS NULL
-RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
-`
-
-func (q *Queries) SoftDeleteMessage(ctx context.Context, id pgtype.UUID) (Message, error) {
-	row := q.db.QueryRow(ctx, softDeleteMessage, id)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const updateMessageStatus = `-- name: UpdateMessageStatus :one
+const updateMessage = `-- name: UpdateMessage :one
 UPDATE messages
 SET
     status = $2,
+    text = $3,
+    media_url = $4,
+    sticker_id = $5,
+    stream_id = $6,
+    sequence = $7,
     updated_at = now()
 WHERE id = $1
   AND deleted_at IS NULL
 RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
-type UpdateMessageStatusParams struct {
-	ID     pgtype.UUID
-	Status string
+type UpdateMessageParams struct {
+	ID        pgtype.UUID
+	Status    string
+	Text      pgtype.Text
+	MediaUrl  pgtype.Text
+	StickerID pgtype.Text
+	StreamID  pgtype.Text
+	Sequence  pgtype.Int8
 }
 
-func (q *Queries) UpdateMessageStatus(ctx context.Context, arg UpdateMessageStatusParams) (Message, error) {
-	row := q.db.QueryRow(ctx, updateMessageStatus, arg.ID, arg.Status)
+func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (Message, error) {
+	row := q.db.QueryRow(ctx, updateMessage,
+		arg.ID,
+		arg.Status,
+		arg.Text,
+		arg.MediaUrl,
+		arg.StickerID,
+		arg.StreamID,
+		arg.Sequence,
+	)
 	var i Message
 	err := row.Scan(
 		&i.ID,

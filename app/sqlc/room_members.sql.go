@@ -11,64 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getRoomMember = `-- name: GetRoomMember :one
-SELECT room_id, user_id, role, status, joined_at, left_at, last_read_message_id
-FROM room_members
-WHERE room_id = $1
-  AND user_id = $2
-`
-
-type GetRoomMemberParams struct {
-	RoomID pgtype.UUID
-	UserID pgtype.UUID
-}
-
-func (q *Queries) GetRoomMember(ctx context.Context, arg GetRoomMemberParams) (RoomMember, error) {
-	row := q.db.QueryRow(ctx, getRoomMember, arg.RoomID, arg.UserID)
-	var i RoomMember
-	err := row.Scan(
-		&i.RoomID,
-		&i.UserID,
-		&i.Role,
-		&i.Status,
-		&i.JoinedAt,
-		&i.LeftAt,
-		&i.LastReadMessageID,
-	)
-	return i, err
-}
-
-const leaveRoom = `-- name: LeaveRoom :one
-UPDATE room_members
-SET
-    status = 'LEFT',
-    left_at = now()
-WHERE room_id = $1
-  AND user_id = $2
-RETURNING room_id, user_id, role, status, joined_at, left_at, last_read_message_id
-`
-
-type LeaveRoomParams struct {
-	RoomID pgtype.UUID
-	UserID pgtype.UUID
-}
-
-func (q *Queries) LeaveRoom(ctx context.Context, arg LeaveRoomParams) (RoomMember, error) {
-	row := q.db.QueryRow(ctx, leaveRoom, arg.RoomID, arg.UserID)
-	var i RoomMember
-	err := row.Scan(
-		&i.RoomID,
-		&i.UserID,
-		&i.Role,
-		&i.Status,
-		&i.JoinedAt,
-		&i.LeftAt,
-		&i.LastReadMessageID,
-	)
-	return i, err
-}
-
-const listJoinedRoomMembers = `-- name: ListJoinedRoomMembers :many
+const findAllJoinedRoomMembersByRoomID = `-- name: FindAllJoinedRoomMembersByRoomID :many
 SELECT room_id, user_id, role, status, joined_at, left_at, last_read_message_id
 FROM room_members
 WHERE room_id = $1
@@ -76,8 +19,8 @@ WHERE room_id = $1
 ORDER BY joined_at ASC
 `
 
-func (q *Queries) ListJoinedRoomMembers(ctx context.Context, roomID pgtype.UUID) ([]RoomMember, error) {
-	rows, err := q.db.Query(ctx, listJoinedRoomMembers, roomID)
+func (q *Queries) FindAllJoinedRoomMembersByRoomID(ctx context.Context, roomID pgtype.UUID) ([]RoomMember, error) {
+	rows, err := q.db.Query(ctx, findAllJoinedRoomMembersByRoomID, roomID)
 	if err != nil {
 		return nil, err
 	}
@@ -104,15 +47,15 @@ func (q *Queries) ListJoinedRoomMembers(ctx context.Context, roomID pgtype.UUID)
 	return items, nil
 }
 
-const listRoomMembers = `-- name: ListRoomMembers :many
+const findAllRoomMembersByRoomID = `-- name: FindAllRoomMembersByRoomID :many
 SELECT room_id, user_id, role, status, joined_at, left_at, last_read_message_id
 FROM room_members
 WHERE room_id = $1
 ORDER BY joined_at ASC
 `
 
-func (q *Queries) ListRoomMembers(ctx context.Context, roomID pgtype.UUID) ([]RoomMember, error) {
-	rows, err := q.db.Query(ctx, listRoomMembers, roomID)
+func (q *Queries) FindAllRoomMembersByRoomID(ctx context.Context, roomID pgtype.UUID) ([]RoomMember, error) {
+	rows, err := q.db.Query(ctx, findAllRoomMembersByRoomID, roomID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,22 +82,63 @@ func (q *Queries) ListRoomMembers(ctx context.Context, roomID pgtype.UUID) ([]Ro
 	return items, nil
 }
 
-const updateLastReadMessage = `-- name: UpdateLastReadMessage :one
+const findRoomMemberByRoomIDAndUserID = `-- name: FindRoomMemberByRoomIDAndUserID :one
+SELECT room_id, user_id, role, status, joined_at, left_at, last_read_message_id
+FROM room_members
+WHERE room_id = $1
+  AND user_id = $2
+`
+
+type FindRoomMemberByRoomIDAndUserIDParams struct {
+	RoomID pgtype.UUID
+	UserID pgtype.UUID
+}
+
+func (q *Queries) FindRoomMemberByRoomIDAndUserID(ctx context.Context, arg FindRoomMemberByRoomIDAndUserIDParams) (RoomMember, error) {
+	row := q.db.QueryRow(ctx, findRoomMemberByRoomIDAndUserID, arg.RoomID, arg.UserID)
+	var i RoomMember
+	err := row.Scan(
+		&i.RoomID,
+		&i.UserID,
+		&i.Role,
+		&i.Status,
+		&i.JoinedAt,
+		&i.LeftAt,
+		&i.LastReadMessageID,
+	)
+	return i, err
+}
+
+const updateRoomMember = `-- name: UpdateRoomMember :one
 UPDATE room_members
-SET last_read_message_id = $3
+SET
+    role = $3,
+    status = $4,
+    left_at = $5,
+    last_read_message_id = $6
 WHERE room_id = $1
   AND user_id = $2
 RETURNING room_id, user_id, role, status, joined_at, left_at, last_read_message_id
 `
 
-type UpdateLastReadMessageParams struct {
+type UpdateRoomMemberParams struct {
 	RoomID            pgtype.UUID
 	UserID            pgtype.UUID
+	Role              string
+	Status            string
+	LeftAt            pgtype.Timestamptz
 	LastReadMessageID pgtype.UUID
 }
 
-func (q *Queries) UpdateLastReadMessage(ctx context.Context, arg UpdateLastReadMessageParams) (RoomMember, error) {
-	row := q.db.QueryRow(ctx, updateLastReadMessage, arg.RoomID, arg.UserID, arg.LastReadMessageID)
+func (q *Queries) UpdateRoomMember(ctx context.Context, arg UpdateRoomMemberParams) (RoomMember, error) {
+	row := q.db.QueryRow(ctx, updateRoomMember,
+		arg.RoomID,
+		arg.UserID,
+		arg.Role,
+		arg.Status,
+		arg.LeftAt,
+		arg.LastReadMessageID,
+	)
 	var i RoomMember
 	err := row.Scan(
 		&i.RoomID,
