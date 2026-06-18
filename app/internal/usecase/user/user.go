@@ -28,11 +28,11 @@ func (u *userUsecase) CreateUser(user *entity.UserProfile) (*entity.UserProfile,
 		return nil, errors.New("user is required")
 	}
 
-	if err := u.userRepo.CreateUser(ctx, user); err != nil {
+	if err := u.userRepo.Insert(ctx, user); err != nil {
 		return nil, err
 	}
 
-	created, err := u.userRepo.GetUserByID(ctx, string(user.ID))
+	created, err := u.userRepo.FindByID(ctx, string(user.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -41,11 +41,11 @@ func (u *userUsecase) CreateUser(user *entity.UserProfile) (*entity.UserProfile,
 }
 
 func (u *userUsecase) GetUserByID(id string) (*entity.UserProfile, error) {
-	return u.userRepo.GetUserByID(context.Background(), id)
+	return u.userRepo.FindByID(context.Background(), id)
 }
 
 func (u *userUsecase) GetUserByEmail(email string) (*entity.UserProfile, error) {
-	return u.userRepo.GetUserByEmail(context.Background(), email)
+	return u.userRepo.FindByEmail(context.Background(), email)
 }
 
 func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile, error) {
@@ -55,11 +55,11 @@ func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile,
 		return nil, errors.New("user is required")
 	}
 
-	if err := u.userRepo.UpdateUser(ctx, user); err != nil {
+	if err := u.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
 
-	updated, err := u.userRepo.GetUserByID(ctx, string(user.ID))
+	updated, err := u.userRepo.FindByID(ctx, string(user.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +68,11 @@ func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile,
 }
 
 func (u *userUsecase) DeleteUser(id string) error {
-	return u.userRepo.DeleteUser(context.Background(), id)
+	return u.userRepo.Delete(context.Background(), id)
 }
 
 func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
-	return u.userRepo.GetUsers(context.Background(), limit, offset)
+	return u.userRepo.FindAll(context.Background(), limit, offset)
 }
 
 // TODO: 認証基盤の実装に合わせてログイン処理を実装する
@@ -91,5 +91,5 @@ func (u *userUsecase) LeaveRoom(_, _ string) error {
 }
 
 func (u *userUsecase) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
-	return u.userRepo.GetUsersByRoom(context.Background(), roomID)
+	return u.userRepo.FindByRoom(context.Background(), roomID)
 }

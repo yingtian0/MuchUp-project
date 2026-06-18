@@ -16,30 +16,22 @@ func NewRoomRepository(db sqlc.DBTX) repository.RoomRepository {
 	return &roomRepository{q: sqlc.New(db)}
 }
 
-func (repo *roomRepository) CreateRoom(_ context.Context, _ *entity.Room) (*entity.Room, error) {
+func (repo *roomRepository) Insert(_ context.Context, _ *entity.Room) (*entity.Room, error) {
 	return nil, ErrNotImplemented
 }
 
-func (repo *roomRepository) GetRoomByID(_ context.Context, _ string) (*entity.Room, error) {
+func (repo *roomRepository) FindByID(_ context.Context, _ string) (*entity.Room, error) {
 	return nil, ErrNotImplemented
 }
 
-func (repo *roomRepository) GetRoomsByUserID(_ context.Context, _ string) ([]*entity.Room, error) {
+func (repo *roomRepository) FindByUserID(_ context.Context, _ string) ([]*entity.Room, error) {
 	return nil, ErrNotImplemented
 }
 
-func (repo *roomRepository) UpdateRoom(_ context.Context, _ *entity.Room) (*entity.Room, error) {
+func (repo *roomRepository) Update(_ context.Context, _ *entity.Room) (*entity.Room, error) {
 	return nil, ErrNotImplemented
 }
 
-func (repo *roomRepository) DeleteRoom(_ context.Context, _ string) error {
+func (repo *roomRepository) Delete(_ context.Context, _ string) error {
 	return ErrNotImplemented
-}
-
-func (repo *roomRepository) AddUserToRoom(_ context.Context, _, _ string) error {
-	return ErrNotImplemented
-}
-
-func (repo *roomRepository) FindRoomWithAvailableSlots(_ context.Context) (*entity.Room, error) {
-	return nil, ErrNotImplemented
 }

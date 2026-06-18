@@ -7,11 +7,11 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, user *entity.UserProfile) error
-	GetUserByID(ctx context.Context, id string) (*entity.UserProfile, error)
-	UpdateUser(ctx context.Context, user *entity.UserProfile) error
-	DeleteUser(ctx context.Context, id string) error
-	GetUsers(ctx context.Context, limit, offset int) ([]*entity.UserProfile, error)
-	GetUserByEmail(ctx context.Context, email string) (*entity.UserProfile, error)
-	GetUsersByRoom(ctx context.Context, roomID string) ([]*entity.UserProfile, error)
+	Insert(ctx context.Context, user *entity.UserProfile) error
+	FindByID(ctx context.Context, id string) (*entity.UserProfile, error)
+	FindAll(ctx context.Context, limit, offset int) ([]*entity.UserProfile, error)
+	FindByEmail(ctx context.Context, email string) (*entity.UserProfile, error)
+	FindByRoom(ctx context.Context, roomID string) ([]*entity.UserProfile, error)
+	Update(ctx context.Context, user *entity.UserProfile) error
+	Delete(ctx context.Context, id string) error
 }

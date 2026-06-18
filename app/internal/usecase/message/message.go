@@ -46,7 +46,7 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 		return errors.New("content is required")
 	}
 
-	_, err := u.userRepo.GetUserByID(ctx, input.SenderID)
+	_, err := u.userRepo.FindByID(ctx, input.SenderID)
 	if err != nil {
 		return err
 	}
@@ -76,11 +76,11 @@ func (u *messageUsecase) SendChatMessage(ctx context.Context, input dto.SendChat
 }
 
 func (u *messageUsecase) GetMessage(id string) (*entity.Message, error) {
-	return u.messageRepo.GetMessageByID(context.Background(), id)
+	return u.messageRepo.FindByID(context.Background(), id)
 }
 
 func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message, error) {
-	if err := u.messageRepo.CreateMessage(context.Background(), message); err != nil {
+	if err := u.messageRepo.Insert(context.Background(), message); err != nil {
 		return nil, err
 	}
 
@@ -88,7 +88,7 @@ func (u *messageUsecase) CreateMessage(message *entity.Message) (*entity.Message
 }
 
 func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message, error) {
-	if err := u.messageRepo.UpdateMessage(context.Background(), message); err != nil {
+	if err := u.messageRepo.Update(context.Background(), message); err != nil {
 		return nil, err
 	}
 
@@ -96,5 +96,5 @@ func (u *messageUsecase) UpdateMessage(message *entity.Message) (*entity.Message
 }
 
 func (u *messageUsecase) DeleteMessage(id string) error {
-	return u.messageRepo.DeleteMessage(context.Background(), id)
+	return u.messageRepo.Delete(context.Background(), id)
 }
