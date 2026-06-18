@@ -63,39 +63,6 @@ func (q *Queries) DeleteRoom(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
-const findWaitingRandomRoomWithAvailableSlots = `-- name: FindWaitingRandomRoomWithAvailableSlots :one
-SELECT r.id, r.type, r.status, r.capacity, r.created_by, r.created_at, r.activated_at, r.closed_at, r.last_message_at, r.last_ai_intervened_at
-FROM rooms r
-WHERE r.type = 'random'
-  AND r.status = 'waiting'
-  AND (
-      SELECT count(*)
-      FROM room_members rm
-      WHERE rm.room_id = r.id
-        AND rm.status = 'JOINED'
-  ) < r.capacity
-ORDER BY r.created_at ASC
-LIMIT 1
-`
-
-func (q *Queries) FindWaitingRandomRoomWithAvailableSlots(ctx context.Context) (Room, error) {
-	row := q.db.QueryRow(ctx, findWaitingRandomRoomWithAvailableSlots)
-	var i Room
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Status,
-		&i.Capacity,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.ActivatedAt,
-		&i.ClosedAt,
-		&i.LastMessageAt,
-		&i.LastAiIntervenedAt,
-	)
-	return i, err
-}
-
 const getRoomByID = `-- name: GetRoomByID :one
 SELECT id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
 FROM rooms

@@ -11,45 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const addRoomMember = `-- name: AddRoomMember :one
-INSERT INTO room_members (
-    room_id,
-    user_id,
-    role,
-    status
-) VALUES (
-    $1, $2, $3, 'JOINED'
-)
-ON CONFLICT (room_id, user_id)
-DO UPDATE SET
-    status = 'JOINED',
-    role = EXCLUDED.role,
-    joined_at = now(),
-    left_at = NULL
-RETURNING room_id, user_id, role, status, joined_at, left_at, last_read_message_id
-`
-
-type AddRoomMemberParams struct {
-	RoomID pgtype.UUID
-	UserID pgtype.UUID
-	Role   string
-}
-
-func (q *Queries) AddRoomMember(ctx context.Context, arg AddRoomMemberParams) (RoomMember, error) {
-	row := q.db.QueryRow(ctx, addRoomMember, arg.RoomID, arg.UserID, arg.Role)
-	var i RoomMember
-	err := row.Scan(
-		&i.RoomID,
-		&i.UserID,
-		&i.Role,
-		&i.Status,
-		&i.JoinedAt,
-		&i.LeftAt,
-		&i.LastReadMessageID,
-	)
-	return i, err
-}
-
 const getRoomMember = `-- name: GetRoomMember :one
 SELECT room_id, user_id, role, status, joined_at, left_at, last_read_message_id
 FROM room_members

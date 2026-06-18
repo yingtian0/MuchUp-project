@@ -1,20 +1,3 @@
--- name: AddRoomMember :one
-INSERT INTO room_members (
-    room_id,
-    user_id,
-    role,
-    status
-) VALUES (
-    $1, $2, $3, 'JOINED'
-)
-ON CONFLICT (room_id, user_id)
-DO UPDATE SET
-    status = 'JOINED',
-    role = EXCLUDED.role,
-    joined_at = now(),
-    left_at = NULL
-RETURNING *;
-
 -- name: GetRoomMember :one
 SELECT *
 FROM room_members

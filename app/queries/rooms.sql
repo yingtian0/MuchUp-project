@@ -41,20 +41,6 @@ UPDATE rooms
 SET last_message_at = $2
 WHERE id = $1;
 
--- name: FindWaitingRandomRoomWithAvailableSlots :one
-SELECT r.*
-FROM rooms r
-WHERE r.type = 'random'
-  AND r.status = 'waiting'
-  AND (
-      SELECT count(*)
-      FROM room_members rm
-      WHERE rm.room_id = r.id
-        AND rm.status = 'JOINED'
-  ) < r.capacity
-ORDER BY r.created_at ASC
-LIMIT 1;
-
 -- name: DeleteRoom :exec
 DELETE FROM rooms
 WHERE id = $1;
