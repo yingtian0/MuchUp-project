@@ -3,7 +3,10 @@ package rest
 import (
 	"MuchUp/app/internal/controllers/http/ws"
 	"MuchUp/app/internal/controllers/usecase"
+	"MuchUp/app/pkg/auth"
 	"MuchUp/app/pkg/logger"
+	"MuchUp/app/pkg/middleware"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -12,6 +15,7 @@ type Handler struct {
 	userUsecase    usecase.UserUsecase
 	messageUsecase usecase.MessageUsecase
 	logger         logger.Logger
+	validator      auth.TokenValidator
 	hub            *ws.Hub
 }
 type Response struct {
@@ -46,6 +50,7 @@ func NewHandler(
 	userUsecase usecase.UserUsecase,
 	messageUsecase usecase.MessageUsecase,
 	logger logger.Logger,
+	validator auth.TokenValidator,
 
 ) *Handler {
 	hub := &ws.Hub{
@@ -67,6 +72,17 @@ func NewHandler(
 
 func (h *Handler) SetupRouter() *mux.Router {
 	r := mux.NewRouter()
+	chatHandler := &ws.ChatHandler{
+		Hub:            h.hub,
+		MessageUsecase: h.messageUsecase,
+		UserUsecase:    h.userUsecase,
+		Logger:         h.logger,
+	}
 
+	wsHandler := http.HandlerFunc(chatHandler.HandleWebSocket)
+
+	authed := middleware.JWTMiddleware(wsHandler, h.validator)
+
+	r.Handle("/ws/chat", authed).Methods("GET")
 	return r
 }

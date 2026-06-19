@@ -4,6 +4,7 @@ import (
 	"MuchUp/app/config"
 	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
+	authinfra "MuchUp/app/internal/infrastructure/auth"
 	"MuchUp/app/internal/infrastructure/database"
 	"MuchUp/app/internal/infrastructure/database/repositories"
 	redisstore "MuchUp/app/internal/infrastructure/redis"
@@ -25,6 +26,7 @@ import (
 // @Basepath /api/v1
 func main() {
 	config := config.LoadConfig()
+	jwtValidator := authinfra.NewJWTValidator(config.SecretKey, "", "")
 	appLogger := logger.NewLogger()
 	appLogger.Info("loading conifg")
 	appLogger.Infof("config loaded http_port=%s grpc_port=%s db_host=%s db_name=%s", config.HTTPPort, config.GRPCPort, config.DBHost, config.DBName)
@@ -61,7 +63,7 @@ func main() {
 
 	userUsecase := user_service.NewUserUsecase(userRepo)
 	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
-	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
+	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger, jwtValidator)
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, appLogger)
 
