@@ -39,7 +39,6 @@ func JWTMiddleware(next http.Handler, validator auth.TokenValidator) http.Handle
 		}
 
 		ctx = context.WithValue(r.Context(), UserIDContextKey, claims.UserID)
-		ctx = context.WithValue(ctx, RoomIDContextKey, claims.RoomID)
 		ctx = context.WithValue(ctx, ClaimsContextKey, claims)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
