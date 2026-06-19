@@ -181,10 +181,7 @@ func (ch *ChatHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// roomID は無くても許容している
-	RoomID, ok := r.Context().Value(middleware.RoomIDContextKey).(string)
-	if !ok {
-		RoomID = ""
-	}
+	RoomID := r.URL.Query().Get("room_id")
 
 	// HTTP 接続を WebSocket にアップグレード
 	conn, err := Upgrader.Upgrade(w, r, nil)
