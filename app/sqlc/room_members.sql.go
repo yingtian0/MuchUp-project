@@ -109,7 +109,7 @@ func (q *Queries) FindRoomMemberByRoomIDAndUserID(ctx context.Context, arg FindR
 	return i, err
 }
 
-const updateRoomMember = `-- name: UpdateRoomMember :one
+const updateRoomMember = `-- name: UpdateRoomMember :exec
 UPDATE room_members
 SET
     role = $3,
@@ -118,7 +118,6 @@ SET
     last_read_message_id = $6
 WHERE room_id = $1
   AND user_id = $2
-RETURNING room_id, user_id, role, status, joined_at, left_at, last_read_message_id
 `
 
 type UpdateRoomMemberParams struct {
@@ -130,8 +129,8 @@ type UpdateRoomMemberParams struct {
 	LastReadMessageID pgtype.UUID
 }
 
-func (q *Queries) UpdateRoomMember(ctx context.Context, arg UpdateRoomMemberParams) (RoomMember, error) {
-	row := q.db.QueryRow(ctx, updateRoomMember,
+func (q *Queries) UpdateRoomMember(ctx context.Context, arg UpdateRoomMemberParams) error {
+	_, err := q.db.Exec(ctx, updateRoomMember,
 		arg.RoomID,
 		arg.UserID,
 		arg.Role,
@@ -139,15 +138,5 @@ func (q *Queries) UpdateRoomMember(ctx context.Context, arg UpdateRoomMemberPara
 		arg.LeftAt,
 		arg.LastReadMessageID,
 	)
-	var i RoomMember
-	err := row.Scan(
-		&i.RoomID,
-		&i.UserID,
-		&i.Role,
-		&i.Status,
-		&i.JoinedAt,
-		&i.LeftAt,
-		&i.LastReadMessageID,
-	)
-	return i, err
+	return err
 }

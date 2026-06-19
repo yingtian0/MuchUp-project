@@ -93,7 +93,7 @@ func (q *Queries) FindUserByID(ctx context.Context, id pgtype.UUID) (User, error
 	return i, err
 }
 
-const insertUser = `-- name: InsertUser :one
+const insertUser = `-- name: InsertUser :exec
 INSERT INTO users (
     nickname,
     avatar_url,
@@ -103,7 +103,6 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, nickname, avatar_url, personality_profile, usage_purpose, status, created_at, updated_at, deleted_at
 `
 
 type InsertUserParams struct {
@@ -114,30 +113,18 @@ type InsertUserParams struct {
 	Status             string
 }
 
-func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, insertUser,
+func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
+	_, err := q.db.Exec(ctx, insertUser,
 		arg.Nickname,
 		arg.AvatarUrl,
 		arg.PersonalityProfile,
 		arg.UsagePurpose,
 		arg.Status,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Nickname,
-		&i.AvatarUrl,
-		&i.PersonalityProfile,
-		&i.UsagePurpose,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
-const insertUserWithID = `-- name: InsertUserWithID :one
+const insertUserWithID = `-- name: InsertUserWithID :exec
 INSERT INTO users (
     id,
     nickname,
@@ -148,7 +135,6 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
-RETURNING id, nickname, avatar_url, personality_profile, usage_purpose, status, created_at, updated_at, deleted_at
 `
 
 type InsertUserWithIDParams struct {
@@ -160,8 +146,8 @@ type InsertUserWithIDParams struct {
 	Status             string
 }
 
-func (q *Queries) InsertUserWithID(ctx context.Context, arg InsertUserWithIDParams) (User, error) {
-	row := q.db.QueryRow(ctx, insertUserWithID,
+func (q *Queries) InsertUserWithID(ctx context.Context, arg InsertUserWithIDParams) error {
+	_, err := q.db.Exec(ctx, insertUserWithID,
 		arg.ID,
 		arg.Nickname,
 		arg.AvatarUrl,
@@ -169,22 +155,10 @@ func (q *Queries) InsertUserWithID(ctx context.Context, arg InsertUserWithIDPara
 		arg.UsagePurpose,
 		arg.Status,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Nickname,
-		&i.AvatarUrl,
-		&i.PersonalityProfile,
-		&i.UsagePurpose,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
-const updateUser = `-- name: UpdateUser :one
+const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
     nickname = $2,
@@ -195,7 +169,6 @@ SET
     updated_at = now()
 WHERE id = $1
   AND deleted_at IS NULL
-RETURNING id, nickname, avatar_url, personality_profile, usage_purpose, status, created_at, updated_at, deleted_at
 `
 
 type UpdateUserParams struct {
@@ -207,8 +180,8 @@ type UpdateUserParams struct {
 	Status             string
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser,
 		arg.ID,
 		arg.Nickname,
 		arg.AvatarUrl,
@@ -216,17 +189,5 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.UsagePurpose,
 		arg.Status,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Nickname,
-		&i.AvatarUrl,
-		&i.PersonalityProfile,
-		&i.UsagePurpose,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }

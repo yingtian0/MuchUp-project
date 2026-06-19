@@ -17,7 +17,7 @@ WHERE room_id = $1
   AND status = 'JOINED'
 ORDER BY joined_at ASC;
 
--- name: UpdateRoomMember :one
+-- name: UpdateRoomMember :exec
 UPDATE room_members
 SET
     role = $3,
@@ -25,5 +25,4 @@ SET
     left_at = $5,
     last_read_message_id = $6
 WHERE room_id = $1
-  AND user_id = $2
-RETURNING *;
+  AND user_id = $2;

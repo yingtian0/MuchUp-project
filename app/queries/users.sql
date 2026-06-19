@@ -1,4 +1,4 @@
--- name: InsertUser :one
+-- name: InsertUser :exec
 INSERT INTO users (
     nickname,
     avatar_url,
@@ -8,9 +8,9 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING *;
+;
 
--- name: InsertUserWithID :one
+-- name: InsertUserWithID :exec
 INSERT INTO users (
     id,
     nickname,
@@ -21,7 +21,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
-RETURNING *;
+;
 
 -- name: FindUserByID :one
 SELECT *
@@ -36,7 +36,7 @@ WHERE deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
 
--- name: UpdateUser :one
+-- name: UpdateUser :exec
 UPDATE users
 SET
     nickname = $2,
@@ -46,8 +46,7 @@ SET
     status = $6,
     updated_at = now()
 WHERE id = $1
-  AND deleted_at IS NULL
-RETURNING *;
+  AND deleted_at IS NULL;
 
 -- name: DeleteUser :exec
 UPDATE users

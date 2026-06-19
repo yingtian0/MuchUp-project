@@ -1,4 +1,4 @@
--- name: InsertMessage :one
+-- name: InsertMessage :exec
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -13,9 +13,9 @@ INSERT INTO messages (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING *;
+;
 
--- name: InsertTextMessage :one
+-- name: InsertTextMessage :exec
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -28,7 +28,7 @@ INSERT INTO messages (
 ) VALUES (
     $1, $2, $3, 'TEXT', 'SENT', $4, $5, $6
 )
-RETURNING *;
+;
 
 -- name: FindMessageByID :one
 SELECT *
@@ -52,7 +52,7 @@ WHERE sender_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
--- name: UpdateMessage :one
+-- name: UpdateMessage :exec
 UPDATE messages
 SET
     status = $2,
@@ -63,15 +63,13 @@ SET
     sequence = $7,
     updated_at = now()
 WHERE id = $1
-  AND deleted_at IS NULL
-RETURNING *;
+  AND deleted_at IS NULL;
 
--- name: DeleteMessage :one
+-- name: DeleteMessage :exec
 UPDATE messages
 SET
     status = 'DELETED',
     deleted_at = now(),
     updated_at = now()
 WHERE id = $1
-  AND deleted_at IS NULL
-RETURNING *;
+  AND deleted_at IS NULL;

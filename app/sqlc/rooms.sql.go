@@ -84,7 +84,7 @@ func (q *Queries) FindRoomByID(ctx context.Context, id pgtype.UUID) (Room, error
 	return i, err
 }
 
-const insertRoom = `-- name: InsertRoom :one
+const insertRoom = `-- name: InsertRoom :exec
 INSERT INTO rooms (
     type,
     status,
@@ -93,7 +93,6 @@ INSERT INTO rooms (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
 `
 
 type InsertRoomParams struct {
@@ -103,30 +102,17 @@ type InsertRoomParams struct {
 	CreatedBy pgtype.UUID
 }
 
-func (q *Queries) InsertRoom(ctx context.Context, arg InsertRoomParams) (Room, error) {
-	row := q.db.QueryRow(ctx, insertRoom,
+func (q *Queries) InsertRoom(ctx context.Context, arg InsertRoomParams) error {
+	_, err := q.db.Exec(ctx, insertRoom,
 		arg.Type,
 		arg.Status,
 		arg.Capacity,
 		arg.CreatedBy,
 	)
-	var i Room
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Status,
-		&i.Capacity,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.ActivatedAt,
-		&i.ClosedAt,
-		&i.LastMessageAt,
-		&i.LastAiIntervenedAt,
-	)
-	return i, err
+	return err
 }
 
-const updateRoom = `-- name: UpdateRoom :one
+const updateRoom = `-- name: UpdateRoom :exec
 UPDATE rooms
 SET
     status = $2,
@@ -143,7 +129,6 @@ SET
     last_message_at = $7,
     last_ai_intervened_at = $8
 WHERE id = $1
-RETURNING id, type, status, capacity, created_by, created_at, activated_at, closed_at, last_message_at, last_ai_intervened_at
 `
 
 type UpdateRoomParams struct {
@@ -157,8 +142,8 @@ type UpdateRoomParams struct {
 	LastAiIntervenedAt pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error) {
-	row := q.db.QueryRow(ctx, updateRoom,
+func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) error {
+	_, err := q.db.Exec(ctx, updateRoom,
 		arg.ID,
 		arg.Status,
 		arg.Type,
@@ -168,18 +153,5 @@ func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, e
 		arg.LastMessageAt,
 		arg.LastAiIntervenedAt,
 	)
-	var i Room
-	err := row.Scan(
-		&i.ID,
-		&i.Type,
-		&i.Status,
-		&i.Capacity,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.ActivatedAt,
-		&i.ClosedAt,
-		&i.LastMessageAt,
-		&i.LastAiIntervenedAt,
-	)
-	return i, err
+	return err
 }

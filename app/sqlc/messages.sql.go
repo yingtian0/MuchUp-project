@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteMessage = `-- name: DeleteMessage :one
+const deleteMessage = `-- name: DeleteMessage :exec
 UPDATE messages
 SET
     status = 'DELETED',
@@ -19,29 +19,11 @@ SET
     updated_at = now()
 WHERE id = $1
   AND deleted_at IS NULL
-RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
-func (q *Queries) DeleteMessage(ctx context.Context, id pgtype.UUID) (Message, error) {
-	row := q.db.QueryRow(ctx, deleteMessage, id)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+func (q *Queries) DeleteMessage(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteMessage, id)
+	return err
 }
 
 const findAllMessagesByRoom = `-- name: FindAllMessagesByRoom :many
@@ -173,7 +155,7 @@ func (q *Queries) FindMessageByID(ctx context.Context, id pgtype.UUID) (Message,
 	return i, err
 }
 
-const insertMessage = `-- name: InsertMessage :one
+const insertMessage = `-- name: InsertMessage :exec
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -188,7 +170,6 @@ INSERT INTO messages (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
 type InsertMessageParams struct {
@@ -204,8 +185,8 @@ type InsertMessageParams struct {
 	Sequence   pgtype.Int8
 }
 
-func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (Message, error) {
-	row := q.db.QueryRow(ctx, insertMessage,
+func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) error {
+	_, err := q.db.Exec(ctx, insertMessage,
 		arg.RoomID,
 		arg.SenderID,
 		arg.SenderType,
@@ -217,27 +198,10 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (M
 		arg.StreamID,
 		arg.Sequence,
 	)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
-const insertTextMessage = `-- name: InsertTextMessage :one
+const insertTextMessage = `-- name: InsertTextMessage :exec
 INSERT INTO messages (
     room_id,
     sender_id,
@@ -250,7 +214,6 @@ INSERT INTO messages (
 ) VALUES (
     $1, $2, $3, 'TEXT', 'SENT', $4, $5, $6
 )
-RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
 type InsertTextMessageParams struct {
@@ -262,8 +225,8 @@ type InsertTextMessageParams struct {
 	Sequence   pgtype.Int8
 }
 
-func (q *Queries) InsertTextMessage(ctx context.Context, arg InsertTextMessageParams) (Message, error) {
-	row := q.db.QueryRow(ctx, insertTextMessage,
+func (q *Queries) InsertTextMessage(ctx context.Context, arg InsertTextMessageParams) error {
+	_, err := q.db.Exec(ctx, insertTextMessage,
 		arg.RoomID,
 		arg.SenderID,
 		arg.SenderType,
@@ -271,27 +234,10 @@ func (q *Queries) InsertTextMessage(ctx context.Context, arg InsertTextMessagePa
 		arg.StreamID,
 		arg.Sequence,
 	)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
-const updateMessage = `-- name: UpdateMessage :one
+const updateMessage = `-- name: UpdateMessage :exec
 UPDATE messages
 SET
     status = $2,
@@ -303,7 +249,6 @@ SET
     updated_at = now()
 WHERE id = $1
   AND deleted_at IS NULL
-RETURNING id, room_id, sender_id, sender_type, kind, status, text, media_url, sticker_id, stream_id, sequence, created_at, updated_at, deleted_at
 `
 
 type UpdateMessageParams struct {
@@ -316,8 +261,8 @@ type UpdateMessageParams struct {
 	Sequence  pgtype.Int8
 }
 
-func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (Message, error) {
-	row := q.db.QueryRow(ctx, updateMessage,
+func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) error {
+	_, err := q.db.Exec(ctx, updateMessage,
 		arg.ID,
 		arg.Status,
 		arg.Text,
@@ -326,22 +271,5 @@ func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (M
 		arg.StreamID,
 		arg.Sequence,
 	)
-	var i Message
-	err := row.Scan(
-		&i.ID,
-		&i.RoomID,
-		&i.SenderID,
-		&i.SenderType,
-		&i.Kind,
-		&i.Status,
-		&i.Text,
-		&i.MediaUrl,
-		&i.StickerID,
-		&i.StreamID,
-		&i.Sequence,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }

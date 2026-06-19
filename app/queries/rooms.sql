@@ -1,4 +1,4 @@
--- name: InsertRoom :one
+-- name: InsertRoom :exec
 INSERT INTO rooms (
     type,
     status,
@@ -7,7 +7,7 @@ INSERT INTO rooms (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING *;
+;
 
 -- name: FindRoomByID :one
 SELECT *
@@ -21,7 +21,7 @@ JOIN room_members rm ON rm.room_id = r.id
 WHERE rm.user_id = $1
 ORDER BY COALESCE(r.last_message_at, r.created_at) DESC;
 
--- name: UpdateRoom :one
+-- name: UpdateRoom :exec
 UPDATE rooms
 SET
     status = $2,
@@ -37,8 +37,7 @@ SET
     END,
     last_message_at = $7,
     last_ai_intervened_at = $8
-WHERE id = $1
-RETURNING *;
+WHERE id = $1;
 
 -- name: DeleteRoom :exec
 DELETE FROM rooms
