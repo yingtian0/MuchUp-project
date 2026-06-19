@@ -23,6 +23,7 @@ type Room struct {
 	CreatedBy          *UserID
 	CreatedAt          time.Time
 	ActivatedAt        *time.Time
+	ClosedAt           *time.Time
 	LastMessageAt      *time.Time
 	LastAIIntervenedAt *time.Time
 }
