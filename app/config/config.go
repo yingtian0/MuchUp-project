@@ -18,7 +18,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		SecretKey: os.Getenv("JWT_SECRET_KEY"),
+		SecretKey: os.Getenv("JWT_SECRET"),
 		DBHost:    os.Getenv("DB_HOST"),
 		DBUser:    os.Getenv("DB_USER"),
 		DBPass:    os.Getenv("DB_PASSWORD"),
