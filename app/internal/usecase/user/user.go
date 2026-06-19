@@ -32,7 +32,7 @@ func (u *userUsecase) CreateUser(user *entity.UserProfile) (*entity.UserProfile,
 		return nil, err
 	}
 
-	created, err := u.userRepo.FindByID(ctx, string(user.ID))
+	created, err := u.userRepo.FindByID(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (u *userUsecase) CreateUser(user *entity.UserProfile) (*entity.UserProfile,
 }
 
 func (u *userUsecase) GetUserByID(id string) (*entity.UserProfile, error) {
-	return u.userRepo.FindByID(context.Background(), id)
+	return u.userRepo.FindByID(context.Background(), entity.UserID(id))
 }
 
 func (u *userUsecase) GetUserByEmail(email string) (*entity.UserProfile, error) {
@@ -59,7 +59,7 @@ func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile,
 		return nil, err
 	}
 
-	updated, err := u.userRepo.FindByID(ctx, string(user.ID))
+	updated, err := u.userRepo.FindByID(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (u *userUsecase) UpdateUser(user *entity.UserProfile) (*entity.UserProfile,
 }
 
 func (u *userUsecase) DeleteUser(id string) error {
-	return u.userRepo.Delete(context.Background(), id)
+	return u.userRepo.Delete(context.Background(), entity.UserID(id))
 }
 
 func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
@@ -91,5 +91,5 @@ func (u *userUsecase) LeaveRoom(_, _ string) error {
 }
 
 func (u *userUsecase) GetUsersByRoom(roomID string) ([]*entity.UserProfile, error) {
-	return u.userRepo.FindByRoom(context.Background(), roomID)
+	return u.userRepo.FindByRoom(context.Background(), entity.RoomID(roomID))
 }
