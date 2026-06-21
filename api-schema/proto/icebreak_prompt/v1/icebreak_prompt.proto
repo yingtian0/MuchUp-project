@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package domain.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+
+message IcebreakPrompt {
+  string prompt_id = 1;
+  string room_id = 2;
+  string message_id = 3;
+  IcebreakPromptType type = 4;
+  IcebreakTriggerType trigger = 5;
+  string target_user_id = 6;
+  repeated string source_message_ids = 7;
+  string generated_text = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+enum IcebreakPromptType {
+  ICEBREAK_PROMPT_TYPE_UNSPECIFIED = 0;
+  ICEBREAK_PROMPT_TYPE_INITIAL_TOPIC = 1;
+  ICEBREAK_PROMPT_TYPE_DEEP_DIVE_QUESTION = 2;
+  ICEBREAK_PROMPT_TYPE_SILENCE_RECOVERY = 3;
+  ICEBREAK_PROMPT_TYPE_MISSION = 4;
+  ICEBREAK_PROMPT_TYPE_SUMMARY = 5;
+}
+
+enum IcebreakTriggerType {
+  ICEBREAK_TRIGGER_TYPE_UNSPECIFIED = 0;
+  ICEBREAK_TRIGGER_TYPE_ROOM_ACTIVATED = 1;
+  ICEBREAK_TRIGGER_TYPE_USER_MESSAGE = 2;
+  ICEBREAK_TRIGGER_TYPE_SILENCE = 3;
+  ICEBREAK_TRIGGER_TYPE_MANUAL = 4;
+}

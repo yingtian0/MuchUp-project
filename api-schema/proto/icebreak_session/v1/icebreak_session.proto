@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package domain.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+
+message IcebreakSession {
+  string session_id = 1;
+  string room_id = 2;
+  IcebreakSessionStatus status = 3;
+  google.protobuf.Timestamp started_at = 4;
+  google.protobuf.Timestamp last_ai_intervened_at = 5;
+  google.protobuf.Timestamp last_user_message_at = 6;
+  int32 intervention_count = 7;
+  int32 max_intervention_count = 8;
+  int32 cooldown_seconds = 9;
+  bool silence_intervention_enabled = 10;
+  bool initial_topic_sent = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+enum IcebreakSessionStatus {
+  ICEBREAK_SESSION_STATUS_UNSPECIFIED = 0;
+  ICEBREAK_SESSION_STATUS_ACTIVE = 1;
+  ICEBREAK_SESSION_STATUS_COMPLETED = 2;
+  ICEBREAK_SESSION_STATUS_CANCELLED = 3;
+}

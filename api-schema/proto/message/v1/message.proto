@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package domain.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+
+message Message {
+  string message_id = 1;
+  string client_message_id = 2;
+  string sender_id = 3;
+  string room_id = 4;
+  string text = 5;
+  string media_url = 6;
+  string sticker_id = 7;
+  SenderType sender_type = 8;
+  MessageKind kind = 9;
+  MessageStatus status = 10;
+  string idempotency_key = 11;
+  string stream_id = 12;
+  int64 sequence = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+  google.protobuf.Timestamp deleted_at = 16;
+}
+
+enum SenderType {
+  SENDER_TYPE_UNSPECIFIED = 0;
+  SENDER_TYPE_USER = 1;
+  SENDER_TYPE_AI = 2;
+}
+
+enum MessageKind {
+  MESSAGE_KIND_UNSPECIFIED = 0;
+  MESSAGE_KIND_TEXT = 1;
+  MESSAGE_KIND_MEDIA = 2;
+  MESSAGE_KIND_STICKER = 3;
+}
+
+enum MessageStatus {
+  MESSAGE_STATUS_UNSPECIFIED = 0;
+  MESSAGE_STATUS_PENDING = 1;
+  MESSAGE_STATUS_SENT = 2;
+  MESSAGE_STATUS_FAILED = 3;
+  MESSAGE_STATUS_DELETED = 4;
+}
