@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package domain.v1;
+package icebreak_session.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+option go_package = "MuchUp/app/proto/gen/go/icebreak_session/v1;icebreaksessionv1";
 
 message IcebreakSession {
   string session_id = 1;

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package llm.v1;
 
-option go_package = "github.com/MuchUp-monorepo/gen/go/llm/v1;llmv1";
+option go_package = "MuchUp/app/proto/gen/go/llm/v1;llmv1";
 
 service LLMService {
   rpc GenerateReply(GenerateReplyRequest) returns (GenerateReplyResponse);

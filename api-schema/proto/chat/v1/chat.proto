@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "event/v1/chat_event.proto";
+import "google/api/annotations.proto";
+import "message/v1/message.proto";
+import "room/v1/room.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/chat/v1;chatv1";
+
+service ChatService {
+  rpc MatchRoom(MatchRoomRequest) returns (MatchRoomResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/match"
+      body: "*"
+    };
+  }
+
+  rpc GetRoom(GetRoomRequest) returns (GetRoomResponse) {
+    option (google.api.http) = {
+      get: "/v1/chat/rooms/{room_id}"
+    };
+  }
+
+  rpc ListRooms(ListRoomsRequest) returns (ListRoomsResponse) {
+    option (google.api.http) = {
+      get: "/v1/chat/rooms"
+    };
+  }
+
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}:join"
+      body: "*"
+    };
+  }
+
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}:leave"
+      body: "*"
+    };
+  }
+
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/chat/rooms/{room_id}/messages"
+      body: "*"
+    };
+  }
+
+  rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/chat/rooms/{room_id}/messages"
+    };
+  }
+
+  rpc GetRoomEvents(GetRoomEventsRequest) returns (GetRoomEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/chat/rooms/{room_id}/events"
+    };
+  }
+}
+
+message MatchRoomRequest {
+  string idempotency_key = 1;
+}
+
+message MatchRoomResponse {
+  string ticket_id = 1;
+  MatchingStatus status = 2;
+  string room_id = 3;
+  string owner_id = 4;
+  int32 capacity = 5;
+  int32 member_count = 6;
+}
+
+enum MatchingStatus {
+  MATCHING_STATUS_UNSPECIFIED = 0;
+  MATCHING_STATUS_WAITING = 1;
+  MATCHING_STATUS_MATCHED = 2;
+}
+
+message GetRoomRequest {
+  string room_id = 1;
+}
+
+message GetRoomResponse {
+  .room.v1.Room room = 1;
+}
+
+message ListRoomsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListRoomsResponse {
+  repeated RoomSummary rooms = 1;
+  string next_page_token = 2;
+}
+
+message RoomSummary {
+  .room.v1.Room room = 1;
+  .message.v1.Message last_message = 2;
+  int32 unread_count = 3;
+}
+
+message JoinRoomRequest {
+  string room_id = 1;
+  string connection_id = 2;
+  string last_event_id = 3;
+}
+
+message JoinRoomResponse {
+  .room.v1.Room room = 1;
+  .event.v1.ChatEvent event = 2;
+  repeated .event.v1.ChatEvent replay_events = 3;
+}
+
+message LeaveRoomRequest {
+  string room_id = 1;
+  string connection_id = 2;
+}
+
+message LeaveRoomResponse {
+  .event.v1.ChatEvent event = 1;
+}
+
+message SendMessageRequest {
+  string room_id = 1;
+  string client_message_id = 2;
+  string text = 3;
+  string idempotency_key = 4;
+}
+
+message SendMessageResponse {
+  .message.v1.Message message = 1;
+  .event.v1.ChatEvent event = 2;
+}
+
+message GetMessagesRequest {
+  string room_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message GetMessagesResponse {
+  repeated .message.v1.Message messages = 1;
+  string next_page_token = 2;
+}
+
+message GetRoomEventsRequest {
+  string room_id = 1;
+  string last_event_id = 2;
+  int32 limit = 3;
+}
+
+message GetRoomEventsResponse {
+  repeated .event.v1.ChatEvent events = 1;
+}

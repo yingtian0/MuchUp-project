@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package domain.v1;
+package room.v1;
 
-import "domain/v1/room_member.proto";
+import "room_member/v1/room_member.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+option go_package = "MuchUp/app/proto/gen/go/room/v1;roomv1";
 
 message Room {
   string room_id = 1;
   RoomType type = 2;
   RoomStatus status = 3;
   int32 capacity = 4;
-  repeated RoomMember members = 5;
+  repeated .room_member.v1.RoomMember members = 5;
   string created_by = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp activated_at = 8;

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package domain.v1;
+package room_member.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuchUp-monorepo/gen/go/domain/v1;domainv1";
+option go_package = "MuchUp/app/proto/gen/go/room_member/v1;roommemberv1";
 
 message RoomMember {
   string user_id = 1;

@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package event.v1;
+
+import "google/protobuf/timestamp.proto";
+import "message/v1/message.proto";
+import "room/v1/room.proto";
+import "room_member/v1/room_member.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/event/v1;eventv1";
+
+message ChatEvent {
+  string event_id = 1;
+  ChatEventType type = 2;
+  string room_id = 3;
+  string actor_user_id = 4;
+  int32 schema_version = 5;
+  google.protobuf.Timestamp created_at = 6;
+
+  oneof payload {
+    MessageCreatedPayload message_created = 10;
+    UserJoinedPayload user_joined = 11;
+    UserDisconnectedPayload user_disconnected = 12;
+    TypingPayload typing = 13;
+    AiMessageCreatedPayload ai_message_created = 14;
+    RoomActivatedPayload room_activated = 15;
+    ServerDrainingPayload server_draining = 16;
+  }
+}
+
+enum ChatEventType {
+  CHAT_EVENT_TYPE_UNSPECIFIED = 0;
+  CHAT_EVENT_TYPE_MESSAGE_CREATED = 1;
+  CHAT_EVENT_TYPE_USER_JOINED = 2;
+  CHAT_EVENT_TYPE_USER_DISCONNECTED = 3;
+  CHAT_EVENT_TYPE_TYPING = 4;
+  CHAT_EVENT_TYPE_AI_MESSAGE_CREATED = 5;
+  CHAT_EVENT_TYPE_ROOM_ACTIVATED = 6;
+  CHAT_EVENT_TYPE_SERVER_DRAINING = 7;
+}
+
+message MessageCreatedPayload {
+  .message.v1.Message message = 1;
+}
+
+message UserJoinedPayload {
+  .room_member.v1.RoomMember member = 1;
+}
+
+message UserDisconnectedPayload {
+  .room_member.v1.RoomMember member = 1;
+  string connection_id = 2;
+}
+
+message TypingPayload {
+  string user_id = 1;
+  bool is_typing = 2;
+}
+
+message AiMessageCreatedPayload {
+  .message.v1.Message message = 1;
+  string prompt_id = 2;
+  string session_id = 3;
+}
+
+message RoomActivatedPayload {
+  .room.v1.Room room = 1;
+}
+
+message ServerDrainingPayload {
+  int32 reconnect_after_seconds = 1;
+  string reason = 2;
+}
