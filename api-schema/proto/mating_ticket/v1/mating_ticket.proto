@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package mating_ticket.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/mating_ticket/v1;matingticketv1";
+
+message MatchingTicket {
+  string ticket_id = 1;
+  string user_id = 2;
+  MatchingTicketStatus status = 3;
+  string idempotency_key = 4;
+  google.protobuf.Timestamp requested_at = 5;
+  string matched_room_id = 6;
+  google.protobuf.Timestamp expires_at = 7;
+}
+
+enum MatchingTicketStatus {
+  MATCHING_TICKET_STATUS_UNSPECIFIED = 0;
+  MATCHING_TICKET_STATUS_WAITING = 1;
+  MATCHING_TICKET_STATUS_MATCHED = 2;
+  MATCHING_TICKET_STATUS_CANCELLED = 3;
+  MATCHING_TICKET_STATUS_EXPIRED = 4;
+}

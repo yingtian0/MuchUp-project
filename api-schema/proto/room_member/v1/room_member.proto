@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package room_member.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/room_member/v1;roommemberv1";
+
+message RoomMember {
+  string user_id = 1;
+  RoomMemberRole role = 2;
+  RoomMemberStatus status = 3;
+  google.protobuf.Timestamp joined_at = 4;
+  google.protobuf.Timestamp left_at = 5;
+  string last_read_message_id = 6;
+}
+
+enum RoomMemberRole {
+  ROOM_MEMBER_ROLE_UNSPECIFIED = 0;
+  ROOM_MEMBER_ROLE_OWNER = 1;
+  ROOM_MEMBER_ROLE_MEMBER = 2;
+  ROOM_MEMBER_ROLE_AI = 3;
+}
+
+enum RoomMemberStatus {
+  ROOM_MEMBER_STATUS_UNSPECIFIED = 0;
+  ROOM_MEMBER_STATUS_JOINED = 1;
+  ROOM_MEMBER_STATUS_LEFT = 2;
+  ROOM_MEMBER_STATUS_KICKED = 3;
+}

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package user_profile.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/user_profile/v1;userprofilev1";
+
+message UserProfile {
+  string user_id = 1;
+  string nick_name = 2;
+  string display_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  bool email_verified = 6;
+  bool phone_verified = 7;
+  PrimaryAuthMethod auth_method = 8;
+  string avatar_url = 9;
+  repeated string interests = 10;
+  repeated string hobbies = 11;
+  repeated string favorite_tags = 12;
+  string usage_purpose = 13;
+  bool is_active = 14;
+  bool is_banned = 15;
+  UserStatus status = 16;
+  bool is_bot = 17;
+  repeated string blocked_user_ids = 18;
+  google.protobuf.Timestamp created_at = 19;
+  google.protobuf.Timestamp updated_at = 20;
+}
+
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_ACTIVE = 1;
+  USER_STATUS_SUSPENDED = 2;
+  USER_STATUS_DELETED = 3;
+}
+
+enum PrimaryAuthMethod {
+  PRIMARY_AUTH_METHOD_UNSPECIFIED = 0;
+  PRIMARY_AUTH_METHOD_EMAIL = 1;
+  PRIMARY_AUTH_METHOD_PHONE = 2;
+}

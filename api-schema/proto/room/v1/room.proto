@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package room.v1;
+
+import "room_member/v1/room_member.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "MuchUp/app/proto/gen/go/room/v1;roomv1";
+
+message Room {
+  string room_id = 1;
+  RoomType type = 2;
+  RoomStatus status = 3;
+  int32 capacity = 4;
+  repeated .room_member.v1.RoomMember members = 5;
+  string created_by = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp activated_at = 8;
+  google.protobuf.Timestamp last_message_at = 9;
+  google.protobuf.Timestamp last_ai_intervened_at = 10;
+}
+
+enum RoomType {
+  ROOM_TYPE_UNSPECIFIED = 0;
+  ROOM_TYPE_CLOSED = 1;
+  ROOM_TYPE_RANDOM = 2;
+}
+
+enum RoomStatus {
+  ROOM_STATUS_UNSPECIFIED = 0;
+  ROOM_STATUS_WAITING = 1;
+  ROOM_STATUS_ACTIVE = 2;
+  ROOM_STATUS_CLOSED = 3;
+}
