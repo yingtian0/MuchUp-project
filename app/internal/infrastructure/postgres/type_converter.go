@@ -36,3 +36,15 @@ func toPGTimestamptz(t *time.Time) pgtype.Timestamptz {
 
 	return pgtype.Timestamptz{Time: *t, Valid: true}
 }
+
+func fromPGUUID[T uuidID](uuid pgtype.UUID) T {
+	return T(uuid.String())
+}
+
+func fromPGText(t pgtype.Text) *string {
+	if !t.Valid {
+		return nil
+	}
+
+	return &t.String
+}
