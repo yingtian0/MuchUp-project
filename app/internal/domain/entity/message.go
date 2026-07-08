@@ -106,3 +106,41 @@ func (m *Message) CanSendMessage(senderID string) bool {
 
 	return true
 }
+
+func ReconstructMessage(
+	id MessageID,
+	clientMessageID *string,
+	senderID UserID,
+	roomID RoomID,
+	text *string,
+	mediaURL *string,
+	stickerID *string,
+	createdAt time.Time,
+	updatedAt time.Time,
+	deletedAt time.Time,
+	senderType SenderType,
+	kind MessageKind,
+	status MessageStatus,
+	idempotencyKey *string,
+	streamID *string,
+	sequence int64,
+) *Message {
+	return &Message{
+		ID:              id,
+		ClientMessageID: clientMessageID,
+		SenderID:        senderID,
+		RoomID:          roomID,
+		Text:            text,
+		MediaURL:        mediaURL,
+		StickerID:       stickerID,
+		CreatedAt:       createdAt,
+		UpdatedAt:       updatedAt,
+		DeletedAt:       deletedAt,
+		SenderType:      senderType,
+		Kind:            kind,
+		Status:          status,
+		IdempotencyKey:  idempotencyKey,
+		StreamID:        streamID,
+		Sequence:        sequence,
+	}
+}
