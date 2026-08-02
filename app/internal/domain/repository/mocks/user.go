@@ -37,7 +37,7 @@ func (m *MockUserRepository) Delete(ctx context.Context, id entity.UserID) error
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
-func (m *MockUserRepository) FindAll(ctx context.Context, limit, offset int) ([]*entity.UserProfile, error) {
+func (m *MockUserRepository) FindAll(ctx context.Context, limit, offset uint) ([]*entity.UserProfile, error) {
 	args := m.Called(ctx, limit, offset)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

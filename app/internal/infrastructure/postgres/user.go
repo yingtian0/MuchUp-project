@@ -39,7 +39,7 @@ func (repo *userRepository) FindByID(ctx context.Context, id entity.UserID) (*en
 	return toUserEntity(row), nil
 }
 
-func (repo *userRepository) Update(ctx context.Context, user *entity.UserProfile) error {
+func (repo *userRepository) Update(ctx context.Context, _ *entity.UserProfile) error {
 	param := sqlc.UpdateUserParams{}
 
 	if err := repo.q.UpdateUser(ctx, param); err != nil {
@@ -62,10 +62,10 @@ func (repo *userRepository) Delete(ctx context.Context, id entity.UserID) error 
 	return nil
 }
 
-func (repo *userRepository) FindAll(ctx context.Context, limit, offset int) ([]*entity.UserProfile, error) {
+func (repo *userRepository) FindAll(ctx context.Context, limit, offset uint) ([]*entity.UserProfile, error) {
 	param := sqlc.FindAllUsersParams{
-		Limit:  int32(limit),
-		Offset: int32(offset),
+		Limit:  toPGInt32(limit),
+		Offset: toPGInt32(offset),
 	}
 
 	rows, err := repo.q.FindAllUsers(ctx, param)
@@ -81,11 +81,11 @@ func (repo *userRepository) FindAll(ctx context.Context, limit, offset int) ([]*
 	return users, nil
 }
 
-func (repo *userRepository) FindByEmail(ctx context.Context, email string) (*entity.UserProfile, error) {
+func (repo *userRepository) FindByEmail(_ context.Context, _ string) (*entity.UserProfile, error) {
 	return nil, ErrNotImplemented
 }
 
-func (repo *userRepository) FindByRoom(ctx context.Context, roomID entity.RoomID) ([]*entity.UserProfile, error) {
+func (repo *userRepository) FindByRoom(_ context.Context, _ entity.RoomID) ([]*entity.UserProfile, error) {
 	return nil, ErrNotImplemented
 }
 

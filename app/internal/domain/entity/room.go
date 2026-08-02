@@ -18,7 +18,7 @@ type Room struct {
 	ID                 RoomID
 	Type               RoomType
 	Status             RoomStatus
-	Capacity           int
+	Capacity           uint
 	Members            map[UserID]*RoomMember
 	CreatedBy          *UserID
 	CreatedAt          time.Time
@@ -34,7 +34,7 @@ func ReconstructRoom(
 	id RoomID,
 	roomType RoomType,
 	status RoomStatus,
-	capacity int,
+	capacity uint,
 	createdBy *UserID,
 	createdAt time.Time,
 	activatedAt *time.Time,

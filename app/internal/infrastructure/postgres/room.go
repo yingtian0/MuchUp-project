@@ -97,7 +97,7 @@ func toInsertRoomParams(room *entity.Room) (sqlc.InsertRoomParams, error) {
 	return sqlc.InsertRoomParams{
 		Type:      string(room.Type),
 		Status:    string(room.Status),
-		Capacity:  int32(room.Capacity),
+		Capacity:  toPGInt32(room.Capacity),
 		CreatedBy: createdBy,
 	}, nil
 }
@@ -112,7 +112,7 @@ func toUpdateRoomParams(room *entity.Room) (sqlc.UpdateRoomParams, error) {
 		ID:                 id,
 		Status:             string(room.Status),
 		Type:               string(room.Type),
-		Capacity:           int32(room.Capacity),
+		Capacity:           toPGInt32(room.Capacity),
 		ActivatedAt:        toPGTimestamptz(room.ActivatedAt),
 		ClosedAt:           toPGTimestamptz(room.ClosedAt),
 		LastMessageAt:      toPGTimestamptz(room.LastMessageAt),
@@ -125,7 +125,7 @@ func toRoomEntity(row sqlc.Room) *entity.Room {
 		fromPGUUID[entity.RoomID](row.ID),
 		entity.RoomType(row.Type),
 		entity.RoomStatus(row.Status),
-		int(row.Capacity),
+		fromPGUint32(row.Capacity),
 		fromNullablePGUUID[entity.UserID](row.CreatedBy),
 		row.CreatedAt.Time,
 		fromPGTimestamptz(row.ActivatedAt),

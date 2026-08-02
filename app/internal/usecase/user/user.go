@@ -71,7 +71,7 @@ func (u *userUsecase) DeleteUser(id string) error {
 	return u.userRepo.Delete(context.Background(), entity.UserID(id))
 }
 
-func (u *userUsecase) GetUsers(limit, offset int) ([]*entity.UserProfile, error) {
+func (u *userUsecase) GetUsers(limit, offset uint) ([]*entity.UserProfile, error) {
 	return u.userRepo.FindAll(context.Background(), limit, offset)
 }
 
