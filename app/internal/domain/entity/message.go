@@ -55,6 +55,13 @@ type Message struct {
 	IdempotencyKey *string
 
 	StreamID *string
+	// Sequence はストリーム内での採番。
+	// 永続化層(postgres.toPGSequence)が暫定的に0を未採番(NULL)として扱っているため、
+	// 実際の採番ロジックを実装する際に0始まりの方式を採る場合はこの前提の見直しが必要。
+	// 代替案: *int64にしてnilで未設定を型レベルで表現すれば採番方式に依存しなくなるが、
+	// Reconstructやusecase側などSequenceを参照する箇所全体にnilハンドリングが波及する。
+	// TODO: 採番ロジック実装時に0始まり/1始まりを確定し、この前提(0=未採番)のままでよいか
+	// *int64への変更が必要か議論する。
 	Sequence int64
 }
 
@@ -105,4 +112,42 @@ func (m *Message) CanSendMessage(senderID string) bool {
 	}
 
 	return true
+}
+
+func ReconstructMessage(
+	id MessageID,
+	clientMessageID *string,
+	senderID UserID,
+	roomID RoomID,
+	text *string,
+	mediaURL *string,
+	stickerID *string,
+	createdAt time.Time,
+	updatedAt time.Time,
+	deletedAt time.Time,
+	senderType SenderType,
+	kind MessageKind,
+	status MessageStatus,
+	idempotencyKey *string,
+	streamID *string,
+	sequence int64,
+) *Message {
+	return &Message{
+		ID:              id,
+		ClientMessageID: clientMessageID,
+		SenderID:        senderID,
+		RoomID:          roomID,
+		Text:            text,
+		MediaURL:        mediaURL,
+		StickerID:       stickerID,
+		CreatedAt:       createdAt,
+		UpdatedAt:       updatedAt,
+		DeletedAt:       deletedAt,
+		SenderType:      senderType,
+		Kind:            kind,
+		Status:          status,
+		IdempotencyKey:  idempotencyKey,
+		StreamID:        streamID,
+		Sequence:        sequence,
+	}
 }

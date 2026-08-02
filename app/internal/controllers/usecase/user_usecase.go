@@ -10,5 +10,5 @@ type UserUsecase interface {
 	CreateUser(user *entity.UserProfile) (*entity.UserProfile, error)
 	UpdateUser(user *entity.UserProfile) (*entity.UserProfile, error)
 	DeleteUser(id string) error
-	GetUsers(limit, offset int) ([]*entity.UserProfile, error)
+	GetUsers(limit, offset uint) ([]*entity.UserProfile, error)
 }

@@ -48,6 +48,28 @@ type UserProfile struct {
 	UpdatedAt time.Time
 }
 
+// ReconstructUserProfile は永続化済みのデータから UserProfile を復元する。
+// New系と異なりバリデーションは行わない。
+func ReconstructUserProfile(
+	id UserID,
+	nickname string,
+	avatarURL *string,
+	usagePurpose string,
+	status UserStatus,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *UserProfile {
+	return &UserProfile{
+		ID:           id,
+		NickName:     nickname,
+		AvatarURL:    avatarURL,
+		UsagePurpose: usagePurpose,
+		Status:       status,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
+	}
+}
+
 func (u *UserProfile) CanJoinMatching() bool {
 	return u.Status == UserStatusActive && !u.IsBot && u.IsActive && !u.IsBanned
 }

@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
+
 	"MuchUp/app/config"
 	grpc_controller "MuchUp/app/internal/controllers/grpc/v1"
 	rest_controller "MuchUp/app/internal/controllers/http/v1"
-	"MuchUp/app/internal/infrastructure/database"
-	"MuchUp/app/internal/infrastructure/database/repositories"
+	"MuchUp/app/internal/infrastructure/postgres"
 	redisstore "MuchUp/app/internal/infrastructure/redis"
 	"MuchUp/app/internal/infrastructure/server"
 	message_service "MuchUp/app/internal/usecase/message"
@@ -24,29 +25,12 @@ import (
 // @host localhost:8080
 // @Basepath /api/v1
 func main() {
+	ctx := context.Background()
 	config := config.LoadConfig()
 	appLogger := logger.NewLogger()
 	appLogger.Info("loading conifg")
 	appLogger.Infof("config loaded http_port=%s grpc_port=%s db_host=%s db_name=%s", config.HTTPPort, config.GRPCPort, config.DBHost, config.DBName)
 
-	appLogger.Info("database connecting")
-
-	db, err := database.Connect(config)
-	if err != nil {
-		appLogger.WithError(err).Fatal("Failed to connect to database")
-	}
-
-	appLogger.Info("database connected")
-	appLogger.Info("running database migration")
-
-	if err = database.InitDB(db); err != nil {
-		appLogger.WithError(err).Fatal("database migration failed")
-	}
-
-	appLogger.Info("Database migration completed")
-
-	userRepo := repositories.NewUserRepository(db)
-	messageRepo := repositories.NewMessageRepository(db)
 	redisClient := goredis.NewClient(&goredis.Options{
 		Addr: config.GetRedisAddr(),
 	})
@@ -59,8 +43,21 @@ func main() {
 
 	defer llmConn.Close()
 
-	userUsecase := user_service.NewUserUsecase(userRepo)
-	messageUsecase := message_service.NewMessageUsecase(messageRepo, userRepo, messageStreamStore)
+	appLogger.Info("database connecting")
+
+	db, err := postgres.Connect(ctx, config)
+	if err != nil {
+		appLogger.WithError(err).Fatal("Failed to connect to database")
+	}
+	defer db.Close()
+
+	appLogger.Info("database connected")
+
+	userRepository := postgres.NewUserRepository(db)
+	messageRepository := postgres.NewMessageRepository(db)
+
+	userUsecase := user_service.NewUserUsecase(userRepository)
+	messageUsecase := message_service.NewMessageUsecase(messageRepository, userRepository, messageStreamStore)
 	RestHandler := rest_controller.NewHandler(userUsecase, messageUsecase, appLogger)
 
 	grpcHandler := grpc_controller.NewGrpcHandler(userUsecase, messageUsecase, appLogger)
