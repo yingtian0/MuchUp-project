@@ -41,10 +41,28 @@ func fromPGUUID[T uuidID](uuid pgtype.UUID) T {
 	return T(uuid.String())
 }
 
+func fromNullablePGUUID[T uuidID](uuid pgtype.UUID) *T {
+	if !uuid.Valid {
+		return nil
+	}
+
+	id := fromPGUUID[T](uuid)
+
+	return &id
+}
+
 func fromPGText(t pgtype.Text) *string {
 	if !t.Valid {
 		return nil
 	}
 
 	return &t.String
+}
+
+func fromPGTimestamptz(t pgtype.Timestamptz) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+
+	return &t.Time
 }

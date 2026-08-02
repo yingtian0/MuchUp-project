@@ -35,14 +35,12 @@ func (repo *roomRepository) FindByID(ctx context.Context, id entity.RoomID) (*en
 		return nil, err
 	}
 
-	result, err := repo.q.FindRoomByID(ctx, uuid)
+	row, err := repo.q.FindRoomByID(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
-	_ = result
 
-	// TODO: Reconstructメソッドを用意する
-	return &entity.Room{}, nil
+	return toRoomEntity(row), nil
 }
 
 func (repo *roomRepository) FindByUserID(ctx context.Context, userID entity.UserID) ([]*entity.Room, error) {
@@ -51,14 +49,17 @@ func (repo *roomRepository) FindByUserID(ctx context.Context, userID entity.User
 		return nil, err
 	}
 
-	result, err := repo.q.FindAllRoomsByUserID(ctx, uuid)
+	rows, err := repo.q.FindAllRoomsByUserID(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
-	_ = result
 
-	// TODO: Reconstructメソッドを用意する
-	return make([]*entity.Room, 0), nil
+	rooms := make([]*entity.Room, len(rows))
+	for i, row := range rows {
+		rooms[i] = toRoomEntity(row)
+	}
+
+	return rooms, nil
 }
 
 func (repo *roomRepository) Update(ctx context.Context, room *entity.Room) error {
@@ -83,6 +84,7 @@ func (repo *roomRepository) Delete(ctx context.Context, id entity.RoomID) error 
 	if err := repo.q.DeleteRoom(ctx, uuid); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -116,4 +118,19 @@ func toUpdateRoomParams(room *entity.Room) (sqlc.UpdateRoomParams, error) {
 		LastMessageAt:      toPGTimestamptz(room.LastMessageAt),
 		LastAiIntervenedAt: toPGTimestamptz(room.LastAIIntervenedAt),
 	}, nil
+}
+
+func toRoomEntity(row sqlc.Room) *entity.Room {
+	return entity.ReconstructRoom(
+		fromPGUUID[entity.RoomID](row.ID),
+		entity.RoomType(row.Type),
+		entity.RoomStatus(row.Status),
+		int(row.Capacity),
+		fromNullablePGUUID[entity.UserID](row.CreatedBy),
+		row.CreatedAt.Time,
+		fromPGTimestamptz(row.ActivatedAt),
+		fromPGTimestamptz(row.ClosedAt),
+		fromPGTimestamptz(row.LastMessageAt),
+		fromPGTimestamptz(row.LastAiIntervenedAt),
+	)
 }
